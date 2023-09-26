@@ -694,19 +694,3 @@ func TestBuffer_String(t *testing.T) {
 	b.lines = []string{"abc", "def"}
 	assert.Equal(t, "abc\ndef", b.String())
 }
-
-func TestBuffer_SwapCharacterNext(t *testing.T) {
-	// TODO
-}
-
-func TestBuffer_SwapCharacterPrevious(t *testing.T) {
-	// TODO
-}
-
-func TestBuffer_SwapWordNext(t *testing.T) {
-	// TODO
-}
-
-func TestBuffer_SwapWordPrevious(t *testing.T) {
-	// TODO
-}
