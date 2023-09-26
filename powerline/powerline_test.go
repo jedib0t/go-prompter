@@ -9,6 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	testIP = "0.0.0.0"
+)
+
 func BenchmarkPowerline_Render(b *testing.B) {
 	segHostname := &Segment{}
 	segHostname.SetContent("hostname")
@@ -27,7 +31,7 @@ func BenchmarkPowerline_Render(b *testing.B) {
 	segTime := &Segment{}
 	segTime.SetColor(prompt.Color{Foreground: termenv.ANSI256Color(7), Background: termenv.ANSI256Color(239)})
 	segHostIP := &Segment{}
-	segHostIP.SetContent("0.0.0.0")
+	segHostIP.SetContent(testIP)
 	segHostIP.SetIcon("🌐")
 
 	style := StyleDefault
@@ -58,7 +62,7 @@ func TestPowerline_Render(t *testing.T) {
 	segCmdNum.SetContent("1")
 	segCmdNum.SetColor(prompt.Color{Foreground: termenv.ANSI256Color(16), Background: termenv.ANSI256Color(147)})
 	segHostIP := &Segment{}
-	segHostIP.SetContent("0.0.0.0")
+	segHostIP.SetContent(testIP)
 	segHostIP.SetColor(prompt.Color{Foreground: termenv.ANSI256Color(16), Background: termenv.ANSI256Color(201)})
 	segTime := &Segment{}
 	segTime.SetContent("12:13:14")
@@ -83,7 +87,7 @@ func TestPowerline_Render(t *testing.T) {
 			"\x1b[38;5;235;48;5;147m"+style.SeparatorLeft+"\x1b[0m"+
 			"\x1b[38;5;235;48;5;235m                                                                      \x1b[0m"+
 			"\x1b[38;5;235;48;5;201m"+style.SeparatorRight+"\x1b[0m"+
-			segHostIP.Color().Sprint(" 0.0.0.0 ")+
+			segHostIP.Color().Sprint(" "+testIP+" ")+
 			"\x1b[38;5;201;48;5;239m"+style.SeparatorRight+"\x1b[0m"+
 			segTime.Color().Sprint(" 12:13:14 "),
 		p.Render(120))
@@ -94,9 +98,9 @@ func TestPowerline_Render(t *testing.T) {
 			"\x1b[38;5;147;48;5;205m"+style.SeparatorLeft+"\x1b[0m"+
 			segCmdNum.Color().Sprint(" 1 ")+
 			"\x1b[38;5;235;48;5;147m"+style.SeparatorLeft+"\x1b[0m"+
-			"\x1b[38;5;235;48;5;235m\x1b[0m"+
+			style.Color.Sprint("")+
 			"\x1b[38;5;235;48;5;201m"+style.SeparatorRight+"\x1b[0m"+
-			segHostIP.Color().Sprint(" 0.0.0.0 ")+
+			segHostIP.Color().Sprint(" "+testIP+" ")+
 			"\x1b[38;5;201;48;5;239m"+style.SeparatorRight+"\x1b[0m"+
 			segTime.Color().Sprint(" 12:13:14 "),
 		p.Render(50))
@@ -113,7 +117,7 @@ func TestPowerline_RenderWithAutoAdjust(t *testing.T) {
 	segCmdNum.SetContent("1")
 	segCmdNum.SetColor(prompt.Color{Foreground: termenv.ANSI256Color(16), Background: termenv.ANSI256Color(147)})
 	segHostIP := &Segment{}
-	segHostIP.SetContent("0.0.0.0")
+	segHostIP.SetContent(testIP)
 	segHostIP.SetColor(prompt.Color{Foreground: termenv.ANSI256Color(16), Background: termenv.ANSI256Color(201)})
 	segTime := &Segment{}
 	segTime.SetContent("12:13:14")
@@ -139,7 +143,7 @@ func TestPowerline_RenderWithAutoAdjust(t *testing.T) {
 			"\x1b[38;5;235;48;5;147m"+style.SeparatorLeft+"\x1b[0m"+
 			"\x1b[38;5;235;48;5;235m                                                                      \x1b[0m"+
 			"\x1b[38;5;235;48;5;201m"+style.SeparatorRight+"\x1b[0m"+
-			segHostIP.Color().Sprint(" 0.0.0.0 ")+
+			segHostIP.Color().Sprint(" "+testIP+" ")+
 			"\x1b[38;5;201;48;5;239m"+style.SeparatorRight+"\x1b[0m"+
 			segTime.Color().Sprint(" 12:13:14 "),
 		p.Render(120))
@@ -150,16 +154,16 @@ func TestPowerline_RenderWithAutoAdjust(t *testing.T) {
 			"\x1b[38;5;147;48;5;205m"+style.SeparatorLeft+"\x1b[0m"+
 			segCmdNum.Color().Sprint(" 1 ")+
 			"\x1b[38;5;235;48;5;147m"+style.SeparatorLeft+"\x1b[0m"+
-			"\x1b[38;5;235;48;5;235m\x1b[0m"+
+			style.Color.Sprint("")+
 			"\x1b[38;5;235;48;5;201m"+style.SeparatorRight+"\x1b[0m"+
-			segHostIP.Color().Sprint(" 0.0.0.0 ")+
+			segHostIP.Color().Sprint(" "+testIP+" ")+
 			"\x1b[38;5;201;48;5;239m"+style.SeparatorRight+"\x1b[0m"+
 			segTime.Color().Sprint(" 12:13:14 "),
 		p.Render(50))
 	assert.Equal(t,
 		segUser.Color().Sprint(" 👤 username ")+
 			"\x1b[38;5;235;48;5;17m"+style.SeparatorLeft+"\x1b[0m"+
-			"\x1b[38;5;235;48;5;235m\x1b[0m"+
+			style.Color.Sprint("")+
 			"\x1b[38;5;235;48;5;239m"+style.SeparatorRight+"\x1b[0m"+
 			segTime.Color().Sprint(" 12:13:14 "),
 		p.Render(25))
