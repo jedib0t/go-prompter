@@ -75,10 +75,6 @@ func (p *prompt) renderView(output *termenv.Output, reason string, forced ...boo
 
 	// calculate movement
 	numLinesToRender, numLinesRendered := len(p.linesToRender), len(p.linesRendered)
-	numLinesToWorkOn := numLinesToRender
-	if numLinesToWorkOn < numLinesRendered {
-		numLinesToWorkOn = numLinesRendered
-	}
 
 	// move cursor up and clear printed lines
 	if numLinesRendered > 0 {

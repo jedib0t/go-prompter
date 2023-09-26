@@ -102,7 +102,6 @@ func (p *prompt) updateSuggestionsInternal(lastLine string, lastWord string, las
 	currentSuggestions, _ := p.getSuggestionsAndIdx()
 	if fmt.Sprintf("%#v", suggestions) != fmt.Sprintf("%#v", currentSuggestions) {
 		p.setSuggestions(suggestions)
-		lastLine, lastWord, lastIdx = line, word, idx
 	}
 	return line, word, idx
 }
