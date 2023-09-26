@@ -615,24 +615,28 @@ func (b *buffer) SwapCharacterNext() {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
+	// TODO
 }
 
 func (b *buffer) SwapCharacterPrevious() {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
+	// TODO
 }
 
 func (b *buffer) SwapWordNext() {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
+	// TODO
 }
 
 func (b *buffer) SwapWordPrevious() {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
+	// TODO
 }
 
 func (b *buffer) getCurrentLine() string {

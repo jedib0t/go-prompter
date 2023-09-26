@@ -25,6 +25,13 @@ func main() {
 	if err != nil {
 		hostname = "localhost"
 	}
+	hostIP := hostname
+	hostIPs, _ := net.LookupIP(hostname)
+	for _, ip := range hostIPs {
+		if ipv4 := ip.To4(); ipv4 != nil {
+			hostIP = ipv4.String()
+		}
+	}
 
 	userObj, err := user.Current()
 	if err != nil {
@@ -32,7 +39,6 @@ func main() {
 	}
 	username := userObj.Username
 
-	hostIP := "localhost"
 	if *flagIP != "" {
 		hostIP = *flagIP
 	} else if conn, err := net.Dial("udp", "8.8.8.8:80"); err == nil {

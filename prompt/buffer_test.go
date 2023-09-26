@@ -672,10 +672,6 @@ func TestBuffer_MoveWordRight(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 1, Column: 0}, b.cursor)
 }
 
-func TestBuffer_Render(t *testing.T) {
-
-}
-
 func TestBuffer_Set(t *testing.T) {
 	b := getNewBuffer(t)
 	b.tab = "    "
@@ -700,17 +696,17 @@ func TestBuffer_String(t *testing.T) {
 }
 
 func TestBuffer_SwapCharacterNext(t *testing.T) {
-
+	// TODO
 }
 
 func TestBuffer_SwapCharacterPrevious(t *testing.T) {
-
+	// TODO
 }
 
 func TestBuffer_SwapWordNext(t *testing.T) {
-
+	// TODO
 }
 
 func TestBuffer_SwapWordPrevious(t *testing.T) {
-
+	// TODO
 }
