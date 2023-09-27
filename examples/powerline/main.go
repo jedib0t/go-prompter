@@ -35,10 +35,14 @@ func main() {
 		hostname = "localhost"
 	}
 	hostIP := hostname
-	hostIPs, _ := net.LookupIP(hostname)
-	for _, ip := range hostIPs {
-		if ipv4 := ip.To4(); ipv4 != nil {
-			hostIP = ipv4.String()
+	if *flagIP != "" {
+		hostIP = *flagIP
+	} else {
+		hostIPs, _ := net.LookupIP(hostname)
+		for _, ip := range hostIPs {
+			if ipv4 := ip.To4(); ipv4 != nil {
+				hostIP = ipv4.String()
+			}
 		}
 	}
 
@@ -47,16 +51,6 @@ func main() {
 		userObj = &user.User{Username: "username"}
 	}
 	username := userObj.Username
-
-	if *flagIP != "" {
-		hostIP = *flagIP
-	} else if conn, err := net.Dial("udp", "8.8.8.8:80"); err == nil {
-		defer func() {
-			_ = conn.Close()
-		}()
-		localAddr := conn.LocalAddr().(*net.UDPAddr)
-		hostIP = localAddr.IP.String()
-	}
 
 	// A Powerline is made up of multiple segments stitched together. First,
 	// prepare all the segments that are going to be used.
