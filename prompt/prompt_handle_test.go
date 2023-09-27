@@ -11,6 +11,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	testSuggestions = []Suggestion{
+		{Value: "auto-complete-1"},
+		{Value: "auto-complete-2"},
+	}
+)
+
 func generateTestPromptWithBuffer(t *testing.T, ctx context.Context, text string, cursor CursorLocation) *prompt {
 	p := generateTestPrompt(t, ctx)
 	p.buffer.Set(text)
@@ -60,10 +67,7 @@ func TestPrompt_handleKey(t *testing.T) {
 	t.Run("auto-complete", func(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.isInAutoComplete = true
-		p.suggestions = []Suggestion{
-			{Value: "auto-complete-1"},
-			{Value: "auto-complete-2"},
-		}
+		p.suggestions = append(p.suggestions, testSuggestions...)
 		p.suggestionsIdx = 0
 
 		output := strings.Builder{}
@@ -91,10 +95,7 @@ func TestPrompt_handleKeyAutoComplete(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.isInAutoComplete = true
 		p.keyMapReversed.AutoComplete[Enter] = AutoCompleteChooseNext
-		p.suggestions = []Suggestion{
-			{Value: "auto-complete-1"},
-			{Value: "auto-complete-2"},
-		}
+		p.suggestions = append(p.suggestions, testSuggestions...)
 		p.suggestionsIdx = 0
 
 		output := strings.Builder{}
@@ -108,10 +109,7 @@ func TestPrompt_handleKeyAutoComplete(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.isInAutoComplete = true
 		p.keyMapReversed.AutoComplete[Enter] = AutoCompleteChoosePrevious
-		p.suggestions = []Suggestion{
-			{Value: "auto-complete-1"},
-			{Value: "auto-complete-2"},
-		}
+		p.suggestions = append(p.suggestions, testSuggestions...)
 		p.suggestionsIdx = 1
 
 		output := strings.Builder{}
@@ -125,10 +123,7 @@ func TestPrompt_handleKeyAutoComplete(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.isInAutoComplete = true
 		p.keyMapReversed.AutoComplete[Enter] = AutoCompleteSelect
-		p.suggestions = []Suggestion{
-			{Value: "auto-complete-1"},
-			{Value: "auto-complete-2"},
-		}
+		p.suggestions = append(p.suggestions, testSuggestions...)
 		p.suggestionsIdx = 1
 
 		output := strings.Builder{}

@@ -91,7 +91,7 @@ func TestPowerline_Render(t *testing.T) {
 		"\x1b[38;5;201;48;5;239m" + style.SeparatorRight + "\x1b[0m" +
 		segTime.Render()
 
-	expectedOut50 := segUser.Color().Sprint(" 👤 username ") +
+	expectedOut50 := segUser.Render() +
 		"\x1b[38;5;205;48;5;17m" + style.SeparatorLeft + "\x1b[0m" +
 		segHost.Render() +
 		"\x1b[38;5;147;48;5;205m" + style.SeparatorLeft + "\x1b[0m" +

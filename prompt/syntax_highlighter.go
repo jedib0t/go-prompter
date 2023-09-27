@@ -20,20 +20,20 @@ type SyntaxHighlighter func(input string) string
 func SyntaxHighlighterChroma(language, formatter, style string) (SyntaxHighlighter, error) {
 	l := lexers.Get(language)
 	if l == nil {
-		return nil, fmt.Errorf("%w: %#v (please check Chroma documentation)",
+		return nil, fmt.Errorf("%w: %#v (check Chroma lexers documentation)",
 			ErrUnsupportedChromaLanguage, language)
 	}
 	l = chroma.Coalesce(l)
 
 	f := formatters.Get(formatter)
 	if f == nil {
-		return nil, fmt.Errorf("%w: %#v (please check Chroma documentation)",
+		return nil, fmt.Errorf("%w: %#v (check Chroma formatters documentation)",
 			ErrUnsupportedChromaFormatter, formatter)
 	}
 
 	s := styles.Get(style)
 	if s == nil {
-		return nil, fmt.Errorf("%w: %#v (please check Chroma documentation)",
+		return nil, fmt.Errorf("%w: %#v (check Chroma styles documentation)",
 			ErrUnsupportedChromaStyle, style)
 	}
 
