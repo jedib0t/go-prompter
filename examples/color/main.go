@@ -18,6 +18,7 @@ var (
 	}
 )
 
+//gocyclo:ignore
 func main() {
 	termWidth, _, _ := term.GetSize(int(os.Stdout.Fd()))
 
