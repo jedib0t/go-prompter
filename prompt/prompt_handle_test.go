@@ -11,6 +11,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	testSuggestions = []Suggestion{
+		{Value: "auto-complete-1"},
+		{Value: "auto-complete-2"},
+	}
+)
+
 func generateTestPromptWithBuffer(t *testing.T, ctx context.Context, text string, cursor CursorLocation) *prompt {
 	p := generateTestPrompt(t, ctx)
 	p.buffer.Set(text)
@@ -60,10 +67,7 @@ func TestPrompt_handleKey(t *testing.T) {
 	t.Run("auto-complete", func(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.isInAutoComplete = true
-		p.suggestions = []Suggestion{
-			{Value: "auto-complete-1"},
-			{Value: "auto-complete-2"},
-		}
+		p.suggestions = append(p.suggestions, testSuggestions...)
 		p.suggestionsIdx = 0
 
 		output := strings.Builder{}
@@ -91,10 +95,7 @@ func TestPrompt_handleKeyAutoComplete(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.isInAutoComplete = true
 		p.keyMapReversed.AutoComplete[Enter] = AutoCompleteChooseNext
-		p.suggestions = []Suggestion{
-			{Value: "auto-complete-1"},
-			{Value: "auto-complete-2"},
-		}
+		p.suggestions = append(p.suggestions, testSuggestions...)
 		p.suggestionsIdx = 0
 
 		output := strings.Builder{}
@@ -108,10 +109,7 @@ func TestPrompt_handleKeyAutoComplete(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.isInAutoComplete = true
 		p.keyMapReversed.AutoComplete[Enter] = AutoCompleteChoosePrevious
-		p.suggestions = []Suggestion{
-			{Value: "auto-complete-1"},
-			{Value: "auto-complete-2"},
-		}
+		p.suggestions = append(p.suggestions, testSuggestions...)
 		p.suggestionsIdx = 1
 
 		output := strings.Builder{}
@@ -125,10 +123,7 @@ func TestPrompt_handleKeyAutoComplete(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.isInAutoComplete = true
 		p.keyMapReversed.AutoComplete[Enter] = AutoCompleteSelect
-		p.suggestions = []Suggestion{
-			{Value: "auto-complete-1"},
-			{Value: "auto-complete-2"},
-		}
+		p.suggestions = append(p.suggestions, testSuggestions...)
 		p.suggestionsIdx = 1
 
 		output := strings.Builder{}
@@ -154,6 +149,9 @@ func TestPrompt_handleKeyAutoComplete(t *testing.T) {
 func TestPrompt_handleKeyInsert(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
+
+	testText1 := "test this thing"
+	testText2 := "test this thing\nnot this thing"
 
 	t.Run("shortcuts", func(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
@@ -200,7 +198,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("DeleteWordNext", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing", CursorLocation{0, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText1, CursorLocation{0, 5})
 		p.keyMapReversed.Insert[Enter] = DeleteWordNext
 
 		output := strings.Builder{}
@@ -210,7 +208,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("DeleteWordPrevious", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing", CursorLocation{0, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText1, CursorLocation{0, 5})
 		p.keyMapReversed.Insert[Enter] = DeleteWordPrevious
 
 		output := strings.Builder{}
@@ -220,7 +218,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("EraseEverything", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing", CursorLocation{0, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText1, CursorLocation{0, 5})
 		p.keyMapReversed.Insert[Enter] = EraseEverything
 
 		output := strings.Builder{}
@@ -230,7 +228,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("EraseToBeginningOfLine", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing", CursorLocation{0, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText1, CursorLocation{0, 5})
 		p.keyMapReversed.Insert[Enter] = EraseToBeginningOfLine
 
 		output := strings.Builder{}
@@ -240,7 +238,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("EraseToEndOfLine", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing", CursorLocation{0, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText1, CursorLocation{0, 5})
 		p.keyMapReversed.Insert[Enter] = EraseToEndOfLine
 
 		output := strings.Builder{}
@@ -250,7 +248,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("HistoryNext", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing", CursorLocation{0, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText1, CursorLocation{0, 5})
 		p.SetHistory(testHistoryCommands)
 		p.history.Index = 0
 		p.keyMapReversed.Insert[Enter] = HistoryNext
@@ -262,7 +260,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("HistoryPrevious", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing", CursorLocation{0, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText1, CursorLocation{0, 5})
 		p.SetHistory(testHistoryCommands)
 		p.history.Index = 1
 		p.keyMapReversed.Insert[Enter] = HistoryPrevious
@@ -274,7 +272,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MakeWordCapitalCase", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing", CursorLocation{0, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText1, CursorLocation{0, 5})
 		p.keyMapReversed.Insert[Enter] = MakeWordCapitalCase
 
 		output := strings.Builder{}
@@ -284,7 +282,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MakeWordLowerCase", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test THIS thing", CursorLocation{0, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText1, CursorLocation{0, 5})
 		p.keyMapReversed.Insert[Enter] = MakeWordLowerCase
 
 		output := strings.Builder{}
@@ -294,7 +292,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MakeWordUpperCase", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing", CursorLocation{0, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText1, CursorLocation{0, 5})
 		p.keyMapReversed.Insert[Enter] = MakeWordUpperCase
 
 		output := strings.Builder{}
@@ -304,7 +302,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MoveDownOneLine", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing\nnot this thing", CursorLocation{0, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText2, CursorLocation{0, 5})
 		p.keyMapReversed.Insert[Enter] = MoveDownOneLine
 
 		output := strings.Builder{}
@@ -314,7 +312,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MoveLeftOneCharacter", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing\nnot this thing", CursorLocation{1, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText2, CursorLocation{1, 5})
 		p.keyMapReversed.Insert[Enter] = MoveLeftOneCharacter
 
 		output := strings.Builder{}
@@ -324,7 +322,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MoveRightOneCharacter", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing\nnot this thing", CursorLocation{1, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText2, CursorLocation{1, 5})
 		p.keyMapReversed.Insert[Enter] = MoveRightOneCharacter
 
 		output := strings.Builder{}
@@ -334,7 +332,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MoveUpOneLine", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing\nnot this thing", CursorLocation{1, 5})
+		p := generateTestPromptWithBuffer(t, ctx, testText2, CursorLocation{1, 5})
 		p.keyMapReversed.Insert[Enter] = MoveUpOneLine
 
 		output := strings.Builder{}
@@ -344,7 +342,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MoveToBeginning", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing\nnot this thing", CursorLocation{1, 14})
+		p := generateTestPromptWithBuffer(t, ctx, testText2, CursorLocation{1, 14})
 		p.keyMapReversed.Insert[Enter] = MoveToBeginning
 
 		output := strings.Builder{}
@@ -354,7 +352,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MoveToBeginningOfLine", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing\nnot this thing", CursorLocation{1, 14})
+		p := generateTestPromptWithBuffer(t, ctx, testText2, CursorLocation{1, 14})
 		p.keyMapReversed.Insert[Enter] = MoveToBeginningOfLine
 
 		output := strings.Builder{}
@@ -364,7 +362,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MoveToEnd", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing\nnot this thing", CursorLocation{0, 0})
+		p := generateTestPromptWithBuffer(t, ctx, testText2, CursorLocation{0, 0})
 		p.keyMapReversed.Insert[Enter] = MoveToEnd
 
 		output := strings.Builder{}
@@ -374,7 +372,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MoveToEndOfLine", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing\nnot this thing", CursorLocation{1, 0})
+		p := generateTestPromptWithBuffer(t, ctx, testText2, CursorLocation{1, 0})
 		p.keyMapReversed.Insert[Enter] = MoveToEndOfLine
 
 		output := strings.Builder{}
@@ -384,7 +382,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MoveToWordNext", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing\nnot this thing", CursorLocation{1, 0})
+		p := generateTestPromptWithBuffer(t, ctx, testText2, CursorLocation{1, 0})
 		p.keyMapReversed.Insert[Enter] = MoveToWordNext
 
 		output := strings.Builder{}
@@ -394,7 +392,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	})
 
 	t.Run("MoveToWordPrevious", func(t *testing.T) {
-		p := generateTestPromptWithBuffer(t, ctx, "test this thing\nnot this thing", CursorLocation{1, 14})
+		p := generateTestPromptWithBuffer(t, ctx, testText2, CursorLocation{1, 14})
 		p.keyMapReversed.Insert[Enter] = MoveToWordPrevious
 
 		output := strings.Builder{}
@@ -419,19 +417,19 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 	t.Run("Terminate Done", func(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.keyMapReversed.Insert[Enter] = Terminate
-		p.buffer.InsertString("test this thing")
+		p.buffer.InsertString(testText1)
 
 		output := strings.Builder{}
 		err := p.handleKeyInsert(termenv.NewOutput(&output), tea.KeyMsg{Type: tea.KeyEnter})
 		assert.Nil(t, err)
-		assert.Equal(t, "test this thing", p.buffer.String())
+		assert.Equal(t, testText1, p.buffer.String())
 		assert.True(t, p.buffer.IsDone())
 	})
 
 	t.Run("Terminate Insert Newline", func(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.keyMapReversed.Insert[Enter] = Terminate
-		p.buffer.InsertString("test this thing")
+		p.buffer.InsertString(testText1)
 		p.SetTerminationChecker(TerminationCheckerSQL())
 
 		output := strings.Builder{}

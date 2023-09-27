@@ -127,9 +127,6 @@ func stringSubset(input string, start, stop int) string {
 	nonEscSeqIdx := -1
 	for _, r := range input {
 		if r == escSeqStart {
-			if len(escSeqOpen) > 0 {
-
-			}
 			inEscSeq = true
 			escSeq = []rune{r}
 		} else if inEscSeq {
