@@ -2,7 +2,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/jedib0t/go-prompter.svg)](https://pkg.go.dev/github.com/jedib0t/go-prompter)
 ![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)
-[![Build Status](https://github.com/jedib0t/go-prompter/workflows/CI/badge.svg?branch=main)](https://github.com/jedib0t/go-prompter/actions?query=workflow%3ACI+event%3Apush+branch%3Amain)
+[![Build Status](https://github.com/jedib0t/go-prompter/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jedib0t/go-prompter/actions?query=workflow%3ACI+event%3Apush+branch%3Amain)
 [![Coverage Status](https://coveralls.io/repos/github/jedib0t/go-prompter/badge.svg?branch=main)](https://coveralls.io/github/jedib0t/go-prompter?branch=main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jedib0t/go-prompter)](https://goreportcard.com/report/github.com/jedib0t/go-prompter)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jedib0t_go-prompter&metric=alert_status)](https://sonarcloud.io/dashboard?id=jedib0t_go-prompter)
