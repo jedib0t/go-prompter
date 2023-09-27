@@ -79,37 +79,35 @@ func TestPowerline_Render(t *testing.T) {
 	p.AppendRight(segTime)
 	p.SetStyle(style)
 
+	expectdOut120 := segUser.Color().Sprint(" 👤 username ") +
+		"\x1b[38;5;205;48;5;17m" + style.SeparatorLeft + "\x1b[0m" +
+		segHost.Color().Sprint(" hostname ") +
+		"\x1b[38;5;147;48;5;205m" + style.SeparatorLeft + "\x1b[0m" +
+		segCmdNum.Color().Sprint(" 1 ") +
+		"\x1b[38;5;235;48;5;147m" + style.SeparatorLeft + "\x1b[0m" +
+		style.Color.Sprint("                                                                      ") +
+		"\x1b[38;5;235;48;5;201m" + style.SeparatorRight + "\x1b[0m" +
+		segHostIP.Color().Sprint(" "+testIP+" ") +
+		"\x1b[38;5;201;48;5;239m" + style.SeparatorRight + "\x1b[0m" +
+		segTime.Color().Sprint(" 12:13:14 ")
+
+	expectedOut50 := segUser.Color().Sprint(" 👤 username ") +
+		"\x1b[38;5;205;48;5;17m" + style.SeparatorLeft + "\x1b[0m" +
+		segHost.Color().Sprint(" hostname ") +
+		"\x1b[38;5;147;48;5;205m" + style.SeparatorLeft + "\x1b[0m" +
+		segCmdNum.Color().Sprint(" 1 ") +
+		"\x1b[38;5;235;48;5;147m" + style.SeparatorLeft + "\x1b[0m" +
+		style.Color.Sprint("") +
+		"\x1b[38;5;235;48;5;201m" + style.SeparatorRight + "\x1b[0m" +
+		segHostIP.Color().Sprint(" "+testIP+" ") +
+		"\x1b[38;5;201;48;5;239m" + style.SeparatorRight + "\x1b[0m" +
+		segTime.Color().Sprint(" 12:13:14 ")
+
 	t.Run("without auto-adjusting width", func(t *testing.T) {
 		p.AutoAdjustWidth(false)
 
-		assert.Equal(t,
-			segUser.Color().Sprint(" 👤 username ")+
-				"\x1b[38;5;205;48;5;17m"+style.SeparatorLeft+"\x1b[0m"+
-				segHost.Color().Sprint(" hostname ")+
-				"\x1b[38;5;147;48;5;205m"+style.SeparatorLeft+"\x1b[0m"+
-				segCmdNum.Color().Sprint(" 1 ")+
-				"\x1b[38;5;235;48;5;147m"+style.SeparatorLeft+"\x1b[0m"+
-				"\x1b[38;5;235;48;5;235m                                                                      \x1b[0m"+
-				"\x1b[38;5;235;48;5;201m"+style.SeparatorRight+"\x1b[0m"+
-				segHostIP.Color().Sprint(" "+testIP+" ")+
-				"\x1b[38;5;201;48;5;239m"+style.SeparatorRight+"\x1b[0m"+
-				segTime.Color().Sprint(" 12:13:14 "),
-			p.Render(120))
-
-		assert.Equal(t,
-			segUser.Color().Sprint(" 👤 username ")+
-				"\x1b[38;5;205;48;5;17m"+style.SeparatorLeft+"\x1b[0m"+
-				segHost.Color().Sprint(" hostname ")+
-				"\x1b[38;5;147;48;5;205m"+style.SeparatorLeft+"\x1b[0m"+
-				segCmdNum.Color().Sprint(" 1 ")+
-				"\x1b[38;5;235;48;5;147m"+style.SeparatorLeft+"\x1b[0m"+
-				style.Color.Sprint("")+
-				"\x1b[38;5;235;48;5;201m"+style.SeparatorRight+"\x1b[0m"+
-				segHostIP.Color().Sprint(" "+testIP+" ")+
-				"\x1b[38;5;201;48;5;239m"+style.SeparatorRight+"\x1b[0m"+
-				segTime.Color().Sprint(" 12:13:14 "),
-			p.Render(50))
-
+		assert.Equal(t, expectdOut120, p.Render(120))
+		assert.Equal(t, expectedOut50, p.Render(50))
 		assert.Equal(t,
 			segUser.Color().Sprint(" 👤 username ")+
 				"\x1b[38;5;205;48;5;17m"+style.SeparatorLeft+"\x1b[0m"+
@@ -128,34 +126,8 @@ func TestPowerline_Render(t *testing.T) {
 	t.Run("with auto-adjusting width", func(t *testing.T) {
 		p.AutoAdjustWidth(true)
 
-		assert.Equal(t,
-			segUser.Color().Sprint(" 👤 username ")+
-				"\x1b[38;5;205;48;5;17m"+style.SeparatorLeft+"\x1b[0m"+
-				segHost.Color().Sprint(" hostname ")+
-				"\x1b[38;5;147;48;5;205m"+style.SeparatorLeft+"\x1b[0m"+
-				segCmdNum.Color().Sprint(" 1 ")+
-				"\x1b[38;5;235;48;5;147m"+style.SeparatorLeft+"\x1b[0m"+
-				"\x1b[38;5;235;48;5;235m                                                                      \x1b[0m"+
-				"\x1b[38;5;235;48;5;201m"+style.SeparatorRight+"\x1b[0m"+
-				segHostIP.Color().Sprint(" "+testIP+" ")+
-				"\x1b[38;5;201;48;5;239m"+style.SeparatorRight+"\x1b[0m"+
-				segTime.Color().Sprint(" 12:13:14 "),
-			p.Render(120))
-
-		assert.Equal(t,
-			segUser.Color().Sprint(" 👤 username ")+
-				"\x1b[38;5;205;48;5;17m"+style.SeparatorLeft+"\x1b[0m"+
-				segHost.Color().Sprint(" hostname ")+
-				"\x1b[38;5;147;48;5;205m"+style.SeparatorLeft+"\x1b[0m"+
-				segCmdNum.Color().Sprint(" 1 ")+
-				"\x1b[38;5;235;48;5;147m"+style.SeparatorLeft+"\x1b[0m"+
-				style.Color.Sprint("")+
-				"\x1b[38;5;235;48;5;201m"+style.SeparatorRight+"\x1b[0m"+
-				segHostIP.Color().Sprint(" "+testIP+" ")+
-				"\x1b[38;5;201;48;5;239m"+style.SeparatorRight+"\x1b[0m"+
-				segTime.Color().Sprint(" 12:13:14 "),
-			p.Render(50))
-
+		assert.Equal(t, expectdOut120, p.Render(120))
+		assert.Equal(t, expectedOut50, p.Render(50))
 		assert.Equal(t,
 			segUser.Color().Sprint(" 👤 username ")+
 				"\x1b[38;5;235;48;5;17m"+style.SeparatorLeft+"\x1b[0m"+
