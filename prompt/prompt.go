@@ -519,6 +519,14 @@ func (p *prompt) pauseRender() {
 	p.renderingPaused = true
 }
 
+func (p *prompt) resetSuggestions() {
+	p.suggestionsMutex.Lock()
+	defer p.suggestionsMutex.Unlock()
+
+	p.suggestions = make([]Suggestion, 0)
+	p.suggestionsIdx = 0
+}
+
 func (p *prompt) resumeRender() {
 	p.renderingPausedMutex.Lock()
 	defer p.renderingPausedMutex.Unlock()

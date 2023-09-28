@@ -109,8 +109,10 @@ func (p *prompt) handleKeyInsert(output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.DeleteForwardToEndOfLine()
 	case HistoryNext:
 		p.buffer.Set(p.history.GetNext())
+		p.resetSuggestions()
 	case HistoryPrevious:
 		p.buffer.Set(p.history.GetPrev())
+		p.resetSuggestions()
 	case MakeWordCapitalCase:
 		p.buffer.MakeWordCapitalCase()
 	case MakeWordLowerCase:
@@ -151,6 +153,7 @@ func (p *prompt) handleKeyInsert(output *termenv.Output, key tea.KeyMsg) error {
 		} else {
 			p.buffer.Insert('\n')
 		}
+		p.resetSuggestions()
 	default:
 		if key.Type == tea.KeyRunes {
 			for _, r := range key.Runes {
@@ -158,8 +161,10 @@ func (p *prompt) handleKeyInsert(output *termenv.Output, key tea.KeyMsg) error {
 			}
 		} else if key.Type == tea.KeySpace {
 			p.buffer.Insert(' ')
+			p.resetSuggestions()
 		} else if key.Type == tea.KeyTab {
 			p.buffer.InsertString(p.style.TabString)
+			p.resetSuggestions()
 		}
 	}
 	return nil
