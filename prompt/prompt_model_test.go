@@ -85,7 +85,7 @@ func TestPrompt_updateModel(t *testing.T) {
 		p.buffer.InsertString(`select` + ` * from dual`)
 		p.updateModel(true)
 		expectedLines := []string{
-			"[TestPrompt_updateModel/simple_one-liner_with_line-numbers] \x1b[38;5;237;48;5;233m 1 \x1b[0m \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
+			"[TestPrompt_updateModel/simple_one-liner_with_line-numbers] \x1b[38;5;240;48;5;236m 1 \x1b[0m \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
 		}
 		compareModelLines(t, expectedLines, p.linesToRender)
 	})

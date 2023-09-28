@@ -148,7 +148,7 @@ func TestPrompt_SetHeaderGenerator(t *testing.T) {
 	p.SetHeaderGenerator(LineRuler(StyleLineNumbersEnabled.Color))
 	assert.NotNil(t, p.headerGenerator)
 	assert.Equal(t,
-		"\x1b[38;5;237;48;5;233m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\x1b[0m",
+		"\x1b[38;5;240;48;5;236m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\x1b[0m",
 		p.headerGenerator(80))
 }
 

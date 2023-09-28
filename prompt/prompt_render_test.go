@@ -26,8 +26,8 @@ func TestPrompt_renderView(t *testing.T) {
 	p.updateModel(true)
 	p.renderView(termenv.NewOutput(&output), "test")
 	expectedLines := []string{
-		"\x1b[2K\x1b[38;5;237;48;5;233m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
-		"\x1b[2K\x1b[38;5;237;48;5;233m 1 \x1b[0m This is a test\x1b[38;5;232;48;5;6m \x1b[0m",
+		"\x1b[2K\x1b[38;5;240;48;5;236m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
+		"\x1b[2K\x1b[38;5;240;48;5;236m 1 \x1b[0m This is a test\x1b[38;5;232;48;5;6m \x1b[0m",
 		"",
 	}
 	compareModelLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
@@ -38,8 +38,8 @@ func TestPrompt_renderView(t *testing.T) {
 	p.updateModel(true)
 	p.renderView(termenv.NewOutput(&output), "test")
 	expectedLines = []string{
-		"\x1b[2A\x1b[1B\x1b[2K\x1b[38;5;237;48;5;233m 1 \x1b[0m This is a test",
-		"\x1b[2K\x1b[38;5;237;48;5;233m 2 \x1b[0m and this is not a test\x1b[38;5;232;48;5;6m \x1b[0m",
+		"\x1b[2A\x1b[1B\x1b[2K\x1b[38;5;240;48;5;236m 1 \x1b[0m This is a test",
+		"\x1b[2K\x1b[38;5;240;48;5;236m 2 \x1b[0m and this is not a test\x1b[38;5;232;48;5;6m \x1b[0m",
 		"",
 	}
 	compareModelLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
@@ -50,8 +50,8 @@ func TestPrompt_renderView(t *testing.T) {
 	p.updateModel(true)
 	p.renderView(termenv.NewOutput(&output), "test", true)
 	expectedLines = []string{
-		"\x1b[3A\x1b[1B\x1b[1B\x1b[2K\x1b[38;5;237;48;5;233m 2 \x1b[0m and this is not a test",
-		"\x1b[2K\x1b[38;5;237;48;5;233m 3 \x1b[0m and no idea what this is about.\x1b[38;5;232;48;5;6m \x1b[0m",
+		"\x1b[3A\x1b[1B\x1b[1B\x1b[2K\x1b[38;5;240;48;5;236m 2 \x1b[0m and this is not a test",
+		"\x1b[2K\x1b[38;5;240;48;5;236m 3 \x1b[0m and no idea what this is about.\x1b[38;5;232;48;5;6m \x1b[0m",
 		"",
 	}
 	compareModelLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
@@ -62,10 +62,10 @@ func TestPrompt_renderView(t *testing.T) {
 	p.updateModel(true)
 	p.renderView(termenv.NewOutput(&output), "test")
 	expectedLines = []string{
-		"\x1b[2K\x1b[38;5;237;48;5;233m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
-		"\x1b[2K\x1b[38;5;237;48;5;233m 1 \x1b[0m This is a test",
-		"\x1b[2K\x1b[38;5;237;48;5;233m 2 \x1b[0m and this is not a test",
-		"\x1b[2K\x1b[38;5;237;48;5;233m 3 \x1b[0m and no idea what this is about.\x1b[38;5;232;48;5;6m \x1b[0m",
+		"\x1b[2K\x1b[38;5;240;48;5;236m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
+		"\x1b[2K\x1b[38;5;240;48;5;236m 1 \x1b[0m This is a test",
+		"\x1b[2K\x1b[38;5;240;48;5;236m 2 \x1b[0m and this is not a test",
+		"\x1b[2K\x1b[38;5;240;48;5;236m 3 \x1b[0m and no idea what this is about.\x1b[38;5;232;48;5;6m \x1b[0m",
 		"",
 	}
 	compareModelLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
@@ -76,8 +76,8 @@ func TestPrompt_renderView(t *testing.T) {
 	p.updateModel(true)
 	p.renderView(termenv.NewOutput(&output), "test")
 	expectedLines = []string{
-		"\x1b[4A\x1b[1B\x1b[2K\x1b[38;5;237;48;5;233m 1 \x1b[0m \x1b[38;5;232;48;5;6mT\x1b[0mhis is a test",
-		"\x1b[1B\x1b[2K\x1b[38;5;237;48;5;233m 3 \x1b[0m and no idea what this is about.",
+		"\x1b[4A\x1b[1B\x1b[2K\x1b[38;5;240;48;5;236m 1 \x1b[0m \x1b[38;5;232;48;5;6mT\x1b[0mhis is a test",
+		"\x1b[1B\x1b[2K\x1b[38;5;240;48;5;236m 3 \x1b[0m and no idea what this is about.",
 		"",
 	}
 	compareModelLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
@@ -87,7 +87,7 @@ func TestPrompt_renderView(t *testing.T) {
 	p.updateModel(false)
 	p.renderView(termenv.NewOutput(&output), "test")
 	expectedLines = []string{
-		"\x1b[4A\x1b[1B\x1b[2K\x1b[38;5;237;48;5;233m 1 \x1b[0m This is a test",
+		"\x1b[4A\x1b[1B\x1b[2K\x1b[38;5;240;48;5;236m 1 \x1b[0m This is a test",
 		"\x1b[1B\x1b[1B",
 	}
 	compareModelLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
