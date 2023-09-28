@@ -74,14 +74,14 @@ func (p *Powerline) Render(maxWidth int) string {
 	nsLeft, nsRight, paddingSpace := p.autoAdjustNumSegments(maxWidth)
 
 	left := p.renderLeft(maxWidth, nsLeft, nsRight, paddingSpace)
-	if len(p.right) == 0 {
-		return left
+	if len(p.right) > 0 {
+		leftLen := text.RuneWidthWithoutEscSequences(left)
+		right := p.renderRight(maxWidth, nsLeft, nsRight, paddingSpace)
+		rightLen := text.RuneWidthWithoutEscSequences(right)
+		padding := p.renderPadding(maxWidth - (leftLen + rightLen))
+		return fmt.Sprintf("%s%s%s", left, padding, right)
 	}
-	leftLen := text.RuneWidthWithoutEscSequences(left)
-	right := p.renderRight(maxWidth, nsLeft, nsRight, paddingSpace)
-	rightLen := text.RuneWidthWithoutEscSequences(right)
-	padding := p.renderPadding(maxWidth - (leftLen + rightLen))
-	return fmt.Sprintf("%s%s%s", left, padding, right)
+	return left
 }
 
 func (p *Powerline) SetStyle(style Style) {

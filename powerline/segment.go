@@ -38,8 +38,8 @@ func (s *Segment) Color() prompt.Color {
 		return *s.contentColor
 	}
 	return prompt.Color{
-		Foreground: termenv.ANSI256Color(7),
-		Background: termenv.ANSI256Color(16),
+		Foreground: termenv.ForegroundColor(),
+		Background: termenv.BackgroundColor(),
 	}
 }
 
@@ -52,19 +52,50 @@ func (s *Segment) HasChanges() bool {
 	return s.hasChanges
 }
 
-// SetIcon sets the optional Icon/Emoji to be rendered before the text.
-func (s *Segment) SetIcon(icon string) {
+// Render returns the segment rendered in appropriate colors.
+func (s *Segment) Render() string {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	if s.icon == icon {
-		return
-	}
-	defer func() {
-		s.width = s.calculateWidth()
-	}()
 
-	s.hasChanges = true
-	s.icon = icon
+	if s.content == "" {
+		return ""
+	}
+
+	if s.hasChanges {
+		color := s.color
+		if color == nil {
+			color = s.contentColor
+		}
+
+		out := strings.Builder{}
+		if s.paddingLeft != nil {
+			out.WriteString(*s.paddingLeft)
+		} else {
+			out.WriteRune(' ')
+		}
+		if s.icon != "" {
+			out.WriteString(s.icon)
+			out.WriteRune(' ')
+		}
+		out.WriteString(s.content)
+		if s.paddingRight != nil {
+			out.WriteString(*s.paddingRight)
+		} else {
+			out.WriteRune(' ')
+		}
+
+		s.rendered = color.Sprint(out.String())
+	}
+	s.hasChanges = false
+	return s.rendered
+}
+
+// ResetColor resets the color of the content to defaults.
+func (s *Segment) ResetColor() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	s.color = nil
 }
 
 // SetColor sets the colors to be used for the segment. If not set, the hash of
@@ -121,50 +152,19 @@ func (s *Segment) SetContent(content string, tags ...string) {
 	}
 }
 
-// Render returns the segment rendered in appropriate colors.
-func (s *Segment) Render() string {
+// SetIcon sets the optional Icon/Emoji to be rendered before the text.
+func (s *Segment) SetIcon(icon string) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-
-	if s.content == "" {
-		return ""
+	if s.icon == icon {
+		return
 	}
+	defer func() {
+		s.width = s.calculateWidth()
+	}()
 
-	if s.hasChanges {
-		color := s.color
-		if color == nil {
-			color = s.contentColor
-		}
-
-		out := strings.Builder{}
-		if s.paddingLeft != nil {
-			out.WriteString(*s.paddingLeft)
-		} else {
-			out.WriteRune(' ')
-		}
-		if s.icon != "" {
-			out.WriteString(s.icon)
-			out.WriteRune(' ')
-		}
-		out.WriteString(s.content)
-		if s.paddingRight != nil {
-			out.WriteString(*s.paddingRight)
-		} else {
-			out.WriteRune(' ')
-		}
-
-		s.rendered = color.Sprint(out.String())
-	}
-	s.hasChanges = false
-	return s.rendered
-}
-
-// ResetColor resets the color of the content to defaults.
-func (s *Segment) ResetColor() {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	s.color = nil
+	s.hasChanges = true
+	s.icon = icon
 }
 
 // Width returns the width of the segment when printed on screen.
