@@ -136,7 +136,11 @@ func (p *prompt) processHistoryCommand(input string) *historyCommand {
 		input = strings.TrimSpace(input)
 		itemNum, err := strconv.Atoi(input)
 		if err != nil {
-			itemNum = 0
+			if input == p.historyExecPrefix { // prefix=!; input.original=!!; input=!
+				itemNum = len(p.History())
+			} else {
+				itemNum = 0
+			}
 		}
 		return &historyCommand{Type: historyCommandExec, Value: itemNum}
 	}

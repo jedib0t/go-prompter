@@ -69,6 +69,7 @@ func (p *prompt) handleKeyAutoComplete(output *termenv.Output, key tea.KeyMsg) e
 			}
 			suggestion = strings.Replace(suggestion, word, "", 1)
 			p.buffer.InsertString(suggestion + " ")
+			p.forceAutoComplete(false)
 			p.setSuggestionsIdx(0)
 		}
 	default:
@@ -90,6 +91,8 @@ func (p *prompt) handleKeyInsert(output *termenv.Output, key tea.KeyMsg) error {
 	switch action {
 	case Abort:
 		return ErrAborted
+	case AutoComplete:
+		p.forceAutoComplete(true)
 	case DeleteCharCurrent:
 		p.buffer.DeleteForward(1)
 	case DeleteCharPrevious:

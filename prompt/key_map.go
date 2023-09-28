@@ -25,10 +25,11 @@ var KeyMapSingleLine = KeyMap{
 	AutoComplete: AutoCompleteKeyMap{
 		ChooseNext:     KeySequences{ArrowDown},
 		ChoosePrevious: KeySequences{ArrowUp},
-		Select:         KeySequences{Tab, Enter},
+		Select:         KeySequences{Tab},
 	},
 	Insert: InsertKeyMap{
 		Abort:                  KeySequences{CtrlC, CtrlD, Escape},
+		AutoComplete:           KeySequences{CtrlSpace},
 		DeleteCharCurrent:      KeySequences{Delete},
 		DeleteCharPrevious:     KeySequences{Backspace, CtrlH},
 		DeleteWordNext:         KeySequences{AltD},
@@ -65,10 +66,11 @@ var KeyMapMultiLine = KeyMap{
 	AutoComplete: AutoCompleteKeyMap{
 		ChooseNext:     KeySequences{ArrowDown},
 		ChoosePrevious: KeySequences{ArrowUp},
-		Select:         KeySequences{Tab, Enter},
+		Select:         KeySequences{Tab},
 	},
 	Insert: InsertKeyMap{
 		Abort:                  KeySequences{CtrlC, CtrlD, Escape},
+		AutoComplete:           KeySequences{CtrlSpace},
 		DeleteCharCurrent:      KeySequences{Delete},
 		DeleteCharPrevious:     KeySequences{Backspace, CtrlH},
 		DeleteWordNext:         KeySequences{AltD},
@@ -157,6 +159,7 @@ func (k *KeyMap) reverse() (*keyMapReversed, error) {
 	k.reverseAddKeySequences(rsp.AutoComplete, k.AutoComplete.ChoosePrevious, AutoCompleteChoosePrevious)
 	k.reverseAddKeySequences(rsp.AutoComplete, k.AutoComplete.Select, AutoCompleteSelect)
 	k.reverseAddKeySequences(rsp.Insert, k.Insert.Abort, Abort)
+	k.reverseAddKeySequences(rsp.Insert, k.Insert.AutoComplete, AutoComplete)
 	k.reverseAddKeySequences(rsp.Insert, k.Insert.DeleteCharCurrent, DeleteCharCurrent)
 	k.reverseAddKeySequences(rsp.Insert, k.Insert.DeleteCharPrevious, DeleteCharPrevious)
 	k.reverseAddKeySequences(rsp.Insert, k.Insert.DeleteWordNext, DeleteWordNext)

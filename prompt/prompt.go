@@ -42,6 +42,8 @@ type prompt struct {
 	// render state
 	active                      bool
 	activeMutex                 sync.RWMutex
+	autoCompleteForced          bool
+	autoCompleteForcedMutex     sync.RWMutex
 	buffer                      *buffer
 	cursorColor                 Color
 	cursorColorMutex            sync.RWMutex
@@ -390,6 +392,20 @@ func (p *prompt) doSyntaxHighlighting(lines []string) []string {
 	}
 
 	return cacheVal
+}
+
+func (p *prompt) forceAutoComplete(v bool) {
+	p.autoCompleteForcedMutex.Lock()
+	defer p.autoCompleteForcedMutex.Unlock()
+
+	p.autoCompleteForced = v
+}
+
+func (p *prompt) forcedAutoComplete() bool {
+	p.autoCompleteForcedMutex.Lock()
+	defer p.autoCompleteForcedMutex.Unlock()
+
+	return p.autoCompleteForced
 }
 
 func (p *prompt) getCursorColor() Color {

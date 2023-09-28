@@ -45,8 +45,8 @@ func TestPrompt_KeyMap(t *testing.T) {
 	assert.Equal(t, KeyMapDefault.Insert, p.keyMap.Insert)
 	assert.NotNil(t, p.keyMapReversed)
 	if p.keyMapReversed != nil {
-		assert.Len(t, p.keyMapReversed.AutoComplete, 4)
-		assert.Len(t, p.keyMapReversed.Insert, 27)
+		assert.Len(t, p.keyMapReversed.AutoComplete, 3)
+		assert.Len(t, p.keyMapReversed.Insert, 28)
 	}
 }
 
