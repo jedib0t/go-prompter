@@ -67,6 +67,7 @@ func (p *prompt) renderView(output *termenv.Output, reason string, forced ...boo
 	if p.isRenderPaused() && len(forced) == 0 {
 		return
 	}
+	p.setDebugData("reason", reason)
 
 	timeStart := time.Now()
 	defer func() {
@@ -108,10 +109,9 @@ func (p *prompt) renderView(output *termenv.Output, reason string, forced ...boo
 	}
 
 	if p.debug {
-		stats := fmt.Sprintf("reason: %s | data: %s | time_gen=sh:%v/bf:%v/ac:%v/%v | time_out=%v",
-			reason, p.debugDataAsString(),
+		stats := fmt.Sprintf("%s; time=%v [gen=sh:%v/bf:%v/ac:%v/%v]",
+			p.debugDataAsString(), time.Since(timeStart).Round(time.Microsecond),
 			p.timeSyntaxGen, p.timeBufferGen, p.timeAutoComplete, p.timeGen,
-			time.Since(timeStart).Round(time.Microsecond),
 		)
 
 		output.ClearLine()

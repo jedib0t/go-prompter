@@ -40,26 +40,22 @@ func (p *prompt) handleHistoryList(output *termenv.Output, numItems int) {
 	p.buffer.Reset()
 }
 
-func (p *prompt) handleKey(output *termenv.Output, key tea.KeyMsg) error {
-	if p.isInAutoComplete {
-		return p.handleKeyAutoComplete(output, key)
-	} else {
-		return p.handleKeyInsert(output, key)
-	}
-}
+type actionHandler func(p *prompt, output *termenv.Output, key tea.KeyMsg) error
 
-func (p *prompt) handleKeyAutoComplete(output *termenv.Output, key tea.KeyMsg) error {
-	action := p.translateKeyToAutoCompleteAction(key)
-	switch action {
-	case AutoCompleteChooseNext:
+var autoCompleteActionHandlerMap = map[Action]actionHandler{
+	AutoCompleteChooseNext: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		if p.changeSuggestionsIdx(1) {
 			p.updateModel(true)
 		}
-	case AutoCompleteChoosePrevious:
+		return nil
+	},
+	AutoCompleteChoosePrevious: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		if p.changeSuggestionsIdx(-1) {
 			p.updateModel(true)
 		}
-	case AutoCompleteSelect:
+		return nil
+	},
+	AutoCompleteSelect: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		word, _ := p.buffer.getWordAtCursor()
 		suggestions, suggestionsIdx := p.getSuggestionsAndIdx()
 		if suggestionsIdx < len(suggestions) {
@@ -72,74 +68,112 @@ func (p *prompt) handleKeyAutoComplete(output *termenv.Output, key tea.KeyMsg) e
 			p.forceAutoComplete(false)
 			p.setSuggestionsIdx(0)
 		}
-	default:
+		return nil
+	},
+	None: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		return p.handleKeyInsert(output, key)
-	}
-	return nil
+	},
 }
 
-//gocyclo:ignore
-func (p *prompt) handleKeyInsert(output *termenv.Output, key tea.KeyMsg) error {
-	ks := p.translateKeyToKeySequence(key)
-	if shortcut, ok := p.shortcuts[ks]; ok {
-		p.buffer.Set(shortcut)
-		p.buffer.MarkAsDone()
-		return nil
-	}
-
-	action := p.translateKeyToInsertAction(key)
-	switch action {
-	case Abort:
+var insertActionHandlerMap = map[Action]actionHandler{
+	Abort: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		return ErrAborted
-	case AutoComplete:
+	},
+	AutoComplete: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.forceAutoComplete(true)
-	case DeleteCharCurrent:
+		return nil
+	},
+	DeleteCharCurrent: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.DeleteForward(1)
-	case DeleteCharPrevious:
+		return nil
+	},
+	DeleteCharPrevious: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.DeleteBackward(1)
-	case DeleteWordNext:
+		return nil
+	},
+	DeleteWordNext: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.DeleteWordForward()
-	case DeleteWordPrevious:
+		return nil
+	},
+	DeleteWordPrevious: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.DeleteWordBackward()
-	case EraseEverything:
+		return nil
+	},
+	EraseEverything: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.Reset()
-	case EraseToBeginningOfLine:
+		return nil
+	},
+	EraseToBeginningOfLine: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.DeleteBackwardToBeginningOfLine()
-	case EraseToEndOfLine:
+		return nil
+	},
+	EraseToEndOfLine: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.DeleteForwardToEndOfLine()
-	case HistoryNext:
+		return nil
+	},
+	HistoryNext: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.Set(p.history.GetNext())
 		p.resetSuggestions()
-	case HistoryPrevious:
+		return nil
+	},
+	HistoryPrevious: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.Set(p.history.GetPrev())
 		p.resetSuggestions()
-	case MakeWordCapitalCase:
+		return nil
+	},
+	MakeWordCapitalCase: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MakeWordCapitalCase()
-	case MakeWordLowerCase:
+		return nil
+	},
+	MakeWordLowerCase: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MakeWordLowerCase()
-	case MakeWordUpperCase:
+		return nil
+	},
+	MakeWordUpperCase: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MakeWordUpperCase()
-	case MoveDownOneLine:
+		return nil
+	},
+	MoveDownOneLine: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MoveDown(1)
-	case MoveLeftOneCharacter:
+		return nil
+	},
+	MoveLeftOneCharacter: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MoveLeft(1)
-	case MoveRightOneCharacter:
+		return nil
+	},
+	MoveRightOneCharacter: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MoveRight(1)
-	case MoveUpOneLine:
+		return nil
+	},
+	MoveUpOneLine: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MoveUp(1)
-	case MoveToBeginning:
+		return nil
+	},
+	MoveToBeginning: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MoveToBeginning()
-	case MoveToBeginningOfLine:
+		return nil
+	},
+	MoveToBeginningOfLine: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MoveToBeginningOfLine()
-	case MoveToEnd:
+		return nil
+	},
+	MoveToEnd: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MoveToEnd()
-	case MoveToEndOfLine:
+		return nil
+	},
+	MoveToEndOfLine: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MoveToEndOfLine()
-	case MoveToWordNext:
+		return nil
+	},
+	MoveToWordNext: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MoveWordRight()
-	case MoveToWordPrevious:
+		return nil
+	},
+	MoveToWordPrevious: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		p.buffer.MoveWordLeft()
-	case Terminate:
+		return nil
+	},
+	Terminate: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		input := p.buffer.String()
 		if histCmd := p.processHistoryCommand(input); histCmd.Type != historyCommandNone {
 			switch histCmd.Type {
@@ -153,19 +187,61 @@ func (p *prompt) handleKeyInsert(output *termenv.Output, key tea.KeyMsg) error {
 		} else {
 			p.buffer.Insert('\n')
 		}
+		p.forceAutoComplete(false)
 		p.resetSuggestions()
-	default:
+		return nil
+	},
+	None: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
 		if key.Type == tea.KeyRunes {
 			for _, r := range key.Runes {
 				p.buffer.Insert(r)
 			}
+			p.forceAutoComplete(false)
+			p.resetSuggestions()
 		} else if key.Type == tea.KeySpace {
 			p.buffer.Insert(' ')
+			p.forceAutoComplete(false)
 			p.resetSuggestions()
 		} else if key.Type == tea.KeyTab {
 			p.buffer.InsertString(p.style.TabString)
+			p.forceAutoComplete(false)
 			p.resetSuggestions()
 		}
+		return nil
+	},
+}
+
+func (p *prompt) handleKey(output *termenv.Output, key tea.KeyMsg) error {
+	if p.isInAutoComplete {
+		return p.handleKeyAutoComplete(output, key)
+	} else {
+		return p.handleKeyInsert(output, key)
+	}
+}
+
+func (p *prompt) handleKeyAutoComplete(output *termenv.Output, key tea.KeyMsg) error {
+	action := p.translateKeyToAutoCompleteAction(key)
+	handler, ok := autoCompleteActionHandlerMap[action]
+	if ok && handler != nil {
+		p.setDebugData("action", string(action))
+		return handler(p, output, key)
+	}
+	return nil
+}
+
+func (p *prompt) handleKeyInsert(output *termenv.Output, key tea.KeyMsg) error {
+	ks := p.translateKeyToKeySequence(key)
+	if shortcut, ok := p.shortcuts[ks]; ok {
+		p.buffer.Set(shortcut)
+		p.buffer.MarkAsDone()
+		return nil
+	}
+
+	action := p.translateKeyToInsertAction(key)
+	handler, ok := insertActionHandlerMap[action]
+	if ok && handler != nil {
+		p.setDebugData("action", string(action))
+		return handler(p, output, key)
 	}
 	return nil
 }

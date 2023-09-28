@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -15,7 +16,7 @@ import (
 )
 
 var (
-	defaultRefreshInterval = time.Millisecond * 100
+	defaultRefreshInterval = time.Second / 60 // 60hz
 )
 
 type prompt struct {
@@ -373,7 +374,16 @@ func (p *prompt) debugDataAsString() string {
 	p.debugDataMutex.RLock()
 	defer p.debugDataMutex.RUnlock()
 
-	return fmt.Sprint(p.debugData)
+	if len(p.debugData) == 0 {
+		return "none"
+	}
+
+	var nvps []string
+	for k, v := range p.debugData {
+		nvps = append(nvps, fmt.Sprintf("%s=%s", k, v))
+	}
+	sort.Strings(nvps)
+	return strings.Join(nvps, "; ")
 }
 
 func (p *prompt) doSyntaxHighlighting(lines []string) []string {
