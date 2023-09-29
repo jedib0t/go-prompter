@@ -10,6 +10,7 @@ package mock_prompt
 
 import (
 	context "context"
+	io "io"
 	reflect "reflect"
 	time "time"
 
@@ -276,6 +277,18 @@ func (mr *MockPrompterMockRecorder) SetHistoryListPrefix(arg0 any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHistoryListPrefix", reflect.TypeOf((*MockPrompter)(nil).SetHistoryListPrefix), arg0)
 }
 
+// SetInput mocks base method.
+func (m *MockPrompter) SetInput(arg0 io.Reader) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetInput", arg0)
+}
+
+// SetInput indicates an expected call of SetInput.
+func (mr *MockPrompterMockRecorder) SetInput(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetInput", reflect.TypeOf((*MockPrompter)(nil).SetInput), arg0)
+}
+
 // SetKeyMap mocks base method.
 func (m *MockPrompter) SetKeyMap(arg0 prompt.KeyMap) error {
 	m.ctrl.T.Helper()
@@ -288,6 +301,18 @@ func (m *MockPrompter) SetKeyMap(arg0 prompt.KeyMap) error {
 func (mr *MockPrompterMockRecorder) SetKeyMap(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetKeyMap", reflect.TypeOf((*MockPrompter)(nil).SetKeyMap), arg0)
+}
+
+// SetOutput mocks base method.
+func (m *MockPrompter) SetOutput(arg0 io.Writer) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetOutput", arg0)
+}
+
+// SetOutput indicates an expected call of SetOutput.
+func (mr *MockPrompterMockRecorder) SetOutput(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOutput", reflect.TypeOf((*MockPrompter)(nil).SetOutput), arg0)
 }
 
 // SetPrefix mocks base method.

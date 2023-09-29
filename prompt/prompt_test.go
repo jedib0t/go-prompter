@@ -1,7 +1,11 @@
 package prompt
 
 import (
+	"bytes"
 	"context"
+	"errors"
+	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -11,7 +15,11 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestPromptCursorLocation(t *testing.T) {
+var (
+	errFoo = errors.New("test-error-foo")
+)
+
+func TestPrompt_CursorLocation(t *testing.T) {
 	p := &prompt{}
 	assert.Equal(t, CursorLocation{}, p.CursorLocation())
 
@@ -23,7 +31,7 @@ func TestPromptCursorLocation(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 1, Column: 0}, p.CursorLocation())
 }
 
-func TestPromptHistory(t *testing.T) {
+func TestPrompt_History(t *testing.T) {
 	p := prompt{}
 	assert.Empty(t, p.History())
 
@@ -35,14 +43,25 @@ func TestPromptHistory(t *testing.T) {
 	}
 }
 
-func TestPromptKeyMap(t *testing.T) {
+func TestPrompt_IsActive(t *testing.T) {
+	p := prompt{}
+	assert.False(t, p.IsActive())
+
+	p.markActive()
+	assert.True(t, p.IsActive())
+
+	p.markInactive()
+	assert.False(t, p.IsActive())
+}
+
+func TestPrompt_KeyMap(t *testing.T) {
 	p := prompt{}
 	assert.NotEqual(t, KeyMapDefault, p.keyMap)
 
 	err := p.SetKeyMap(KeyMapDefault)
 	assert.Nil(t, err)
-	assert.Equal(t, KeyMapDefault.AutoComplete, p.keyMap.AutoComplete)
-	assert.Equal(t, KeyMapDefault.Insert, p.keyMap.Insert)
+	assert.Equal(t, KeyMapDefault.AutoComplete, p.KeyMap().AutoComplete)
+	assert.Equal(t, KeyMapDefault.Insert, p.KeyMap().Insert)
 	assert.NotNil(t, p.keyMapReversed)
 	if p.keyMapReversed != nil {
 		assert.Len(t, p.keyMapReversed.AutoComplete, 3)
@@ -50,7 +69,7 @@ func TestPromptKeyMap(t *testing.T) {
 	}
 }
 
-func TestPromptNumLines(t *testing.T) {
+func TestPrompt_NumLines(t *testing.T) {
 	p := prompt{}
 	assert.Zero(t, p.NumLines())
 
@@ -62,37 +81,175 @@ func TestPromptNumLines(t *testing.T) {
 	assert.Equal(t, 2, p.NumLines())
 }
 
-func TestPromptPrompt(t *testing.T) {
+func TestPrompt_Prompt(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	chErrors := make(chan error, 1)
-	chKeyEvents := make(chan tea.KeyMsg, 1)
-	chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
+	t.Run("style error", func(t *testing.T) {
+		p := generateTestPrompt(t, ctx)
 
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-	mockReader := mock_input.NewMockReader(mc)
-	mockReader.EXPECT().Begin(gomock.Any())
-	mockReader.EXPECT().Reset()
-	mockReader.EXPECT().Errors().AnyTimes().Return(chErrors)
-	mockReader.EXPECT().KeyEvents().AnyTimes().Return(chKeyEvents)
-	mockReader.EXPECT().WindowSizeEvents().AnyTimes().Return(chWindowSizeEvents)
-	mockReader.EXPECT().End()
+		s := StyleDefault
+		s.Dimensions.WidthMin = 50
+		s.Dimensions.WidthMax = 40
+		p.SetStyle(s)
 
-	p := generateTestPrompt(t, ctx)
-	p.reader = mockReader
-	go func() {
-		time.Sleep(time.Second / 10) // some time for all goroutines to start
-		chKeyEvents <- tea.KeyMsg{Type: tea.KeyEscape}
-	}()
-	userInput, err := p.Prompt(ctx)
-	assert.Empty(t, userInput)
-	assert.NotNil(t, err)
-	assert.Equal(t, ErrAborted, err)
+		userInput, err := p.Prompt(ctx)
+		assert.Empty(t, userInput)
+		assert.NotNil(t, err)
+		assert.True(t, errors.Is(err, ErrInvalidDimensions))
+	})
+
+	t.Run("no error", func(t *testing.T) {
+		chErrors := make(chan error, 1)
+		chKeyEvents := make(chan tea.KeyMsg, 1)
+		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
+
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReader := mock_input.NewMockReader(mc)
+		mockReader.EXPECT().Begin(gomock.Any())
+		mockReader.EXPECT().Reset()
+		mockReader.EXPECT().Errors().AnyTimes().Return(chErrors)
+		mockReader.EXPECT().KeyEvents().AnyTimes().Return(chKeyEvents)
+		mockReader.EXPECT().WindowSizeEvents().AnyTimes().Return(chWindowSizeEvents)
+		mockReader.EXPECT().End()
+
+		p := generateTestPrompt(t, ctx)
+		p.reader = mockReader
+		go func() {
+			time.Sleep(time.Second / 10) // some time for all goroutines to start
+			chKeyEvents <- tea.KeyMsg{Type: tea.KeyTab}
+			chKeyEvents <- tea.KeyMsg{Type: tea.KeyEnter}
+		}()
+		userInput, err := p.Prompt(ctx)
+		assert.Equal(t, p.style.TabString, userInput)
+		assert.Nil(t, err)
+	})
 }
 
-func TestPromptSetAutoCompleter(t *testing.T) {
+func TestPrompt_SendInput(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	t.Run("send KeySequence error", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReader := mock_input.NewMockReader(mc)
+		mockReader.EXPECT().Send(keySequenceKeyMsgMap[F1]).
+			Return(errFoo)
+
+		p := generateTestPrompt(t, ctx)
+		p.reader = mockReader
+		err := p.SendInput([]any{F1}, time.Second)
+		assert.NotNil(t, err)
+		assert.Equal(t, errFoo, err)
+	})
+
+	t.Run("send KeySequence", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReader := mock_input.NewMockReader(mc)
+		mockReader.EXPECT().Send(keySequenceKeyMsgMap[F1])
+
+		p := generateTestPrompt(t, ctx)
+		p.reader = mockReader
+		err := p.SendInput([]any{F1}, time.Second)
+		assert.Nil(t, err)
+	})
+
+	t.Run("send time.Duration", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		p := generateTestPrompt(t, ctx)
+		err := p.SendInput([]any{time.Microsecond})
+		assert.Nil(t, err)
+	})
+
+	t.Run("send rune error", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReader := mock_input.NewMockReader(mc)
+		mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}}).
+			Return(errFoo)
+
+		p := generateTestPrompt(t, ctx)
+		p.reader = mockReader
+		err := p.SendInput([]any{'a'})
+		assert.NotNil(t, err)
+		assert.Equal(t, errFoo, err)
+	})
+
+	t.Run("send rune", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReader := mock_input.NewMockReader(mc)
+		mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}})
+
+		p := generateTestPrompt(t, ctx)
+		p.reader = mockReader
+		err := p.SendInput([]any{'a'})
+		assert.Nil(t, err)
+	})
+
+	t.Run("send []rune", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReader := mock_input.NewMockReader(mc)
+		gomock.InOrder(
+			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}}),
+			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'b'}}),
+			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'c'}}),
+		)
+
+		p := generateTestPrompt(t, ctx)
+		p.reader = mockReader
+		err := p.SendInput([]any{[]rune{'a', 'b', 'c'}})
+		assert.Nil(t, err)
+	})
+
+	t.Run("send string error", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReader := mock_input.NewMockReader(mc)
+		mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}}).
+			Return(errFoo)
+
+		p := generateTestPrompt(t, ctx)
+		p.reader = mockReader
+		err := p.SendInput([]any{"abc"})
+		assert.NotNil(t, err)
+		assert.Equal(t, errFoo, err)
+	})
+
+	t.Run("send string", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReader := mock_input.NewMockReader(mc)
+		gomock.InOrder(
+			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}}),
+			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'b'}}),
+			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'c'}}),
+		)
+
+		p := generateTestPrompt(t, ctx)
+		p.reader = mockReader
+		err := p.SendInput([]any{"abc"})
+		assert.Nil(t, err)
+	})
+
+	t.Run("send unsupported", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		p := generateTestPrompt(t, ctx)
+		err := p.SendInput([]any{p})
+		assert.NotNil(t, err)
+		assert.True(t, errors.Is(err, ErrUnsupportedInput))
+	})
+}
+
+func TestPrompt_SetAutoCompleter(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.autoCompleter)
 
@@ -100,7 +257,7 @@ func TestPromptSetAutoCompleter(t *testing.T) {
 	assert.NotNil(t, p.autoCompleter)
 }
 
-func TestPromptSetAutoCompleterContextual(t *testing.T) {
+func TestPrompt_SetAutoCompleterContextual(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.autoCompleterContextual)
 
@@ -108,7 +265,7 @@ func TestPromptSetAutoCompleterContextual(t *testing.T) {
 	assert.NotNil(t, p.autoCompleterContextual)
 }
 
-func TestPromptSetCommandShortcuts(t *testing.T) {
+func TestPrompt_SetCommandShortcuts(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.shortcuts)
 
@@ -121,7 +278,7 @@ func TestPromptSetCommandShortcuts(t *testing.T) {
 	assert.Contains(t, p.shortcuts, F1)
 }
 
-func TestPromptSetDebug(t *testing.T) {
+func TestPrompt_SetDebug(t *testing.T) {
 	p := prompt{}
 	assert.False(t, p.debug)
 
@@ -132,7 +289,27 @@ func TestPromptSetDebug(t *testing.T) {
 	assert.False(t, p.debug)
 }
 
-func TestPromptSetHeader(t *testing.T) {
+func TestPrompt_SetFooter(t *testing.T) {
+	p := prompt{}
+	assert.Nil(t, p.footerGenerator)
+
+	p.SetFooter("<title>")
+	assert.NotNil(t, p.footerGenerator)
+	assert.Equal(t, "<title>", p.footerGenerator(100))
+}
+
+func TestPrompt_SetFooterGenerator(t *testing.T) {
+	p := prompt{}
+	assert.Nil(t, p.footerGenerator)
+
+	p.SetFooterGenerator(LineRuler(StyleLineNumbersEnabled.Color))
+	assert.NotNil(t, p.footerGenerator)
+	assert.Equal(t,
+		"\x1b[38;5;240;48;5;236m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\x1b[0m",
+		p.footerGenerator(80))
+}
+
+func TestPrompt_SetHeader(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.headerGenerator)
 
@@ -141,7 +318,7 @@ func TestPromptSetHeader(t *testing.T) {
 	assert.Equal(t, "<title>", p.headerGenerator(100))
 }
 
-func TestPromptSetHeaderGenerator(t *testing.T) {
+func TestPrompt_SetHeaderGenerator(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.headerGenerator)
 
@@ -152,7 +329,7 @@ func TestPromptSetHeaderGenerator(t *testing.T) {
 		p.headerGenerator(80))
 }
 
-func TestPromptSetHistory(t *testing.T) {
+func TestPrompt_SetHistory(t *testing.T) {
 	p := prompt{}
 	assert.Len(t, p.history.Commands, 0)
 	assert.Equal(t, 0, p.history.Index)
@@ -162,7 +339,7 @@ func TestPromptSetHistory(t *testing.T) {
 	assert.Equal(t, len(testHistoryCommands), p.history.Index)
 }
 
-func TestPromptSetHistoryExecPrefix(t *testing.T) {
+func TestPrompt_SetHistoryExecPrefix(t *testing.T) {
 	p := prompt{}
 	assert.Empty(t, p.historyExecPrefix)
 
@@ -170,7 +347,7 @@ func TestPromptSetHistoryExecPrefix(t *testing.T) {
 	assert.Equal(t, "!", p.historyExecPrefix)
 }
 
-func TestPromptSetHistoryListPrefix(t *testing.T) {
+func TestPrompt_SetHistoryListPrefix(t *testing.T) {
 	p := prompt{}
 	assert.Empty(t, p.historyListPrefix)
 
@@ -178,16 +355,54 @@ func TestPromptSetHistoryListPrefix(t *testing.T) {
 	assert.Equal(t, "!!", p.historyListPrefix)
 }
 
-func TestPromptSetKeyMap(t *testing.T) {
+func TestPrompt_SetInput(t *testing.T) {
+	p := prompt{}
+	assert.Nil(t, p.input)
+	assert.Equal(t, os.Stdin, p.getInputReader())
+
+	r := bytes.NewReader([]byte("test"))
+	p.SetInput(r)
+	assert.NotNil(t, p.input)
+	assert.Equal(t, r, p.getInputReader())
+	assert.NotNil(t, p.reader)
+
+	p.SetInput(nil)
+	assert.Nil(t, p.input)
+	assert.Equal(t, os.Stdin, p.getInputReader())
+	assert.NotNil(t, p.reader)
+}
+
+func TestPrompt_SetKeyMap(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.keyMapReversed)
 
 	err := p.SetKeyMap(KeyMapDefault)
 	assert.Nil(t, err)
 	assert.NotNil(t, p.keyMapReversed)
+
+	km := KeyMapDefault
+	km.Insert.MoveToEnd = km.Insert.MoveToBeginning
+	err = p.SetKeyMap(km)
+	assert.NotNil(t, err)
+	assert.True(t, errors.Is(err, ErrDuplicateKeyAssignment))
 }
 
-func TestPromptSetPrefix(t *testing.T) {
+func TestPrompt_SetOutput(t *testing.T) {
+	p := prompt{}
+	assert.Nil(t, p.output)
+	assert.Equal(t, os.Stdout, p.getOutputWriter())
+
+	w := &strings.Builder{}
+	p.SetOutput(w)
+	assert.NotNil(t, p.output)
+	assert.Equal(t, w, p.getOutputWriter())
+
+	p.SetOutput(nil)
+	assert.Nil(t, p.output)
+	assert.Equal(t, os.Stdout, p.getOutputWriter())
+}
+
+func TestPrompt_SetPrefix(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.prefixer)
 
@@ -196,7 +411,7 @@ func TestPromptSetPrefix(t *testing.T) {
 	assert.Equal(t, "> ", p.prefixer())
 }
 
-func TestPromptSetPrefixer(t *testing.T) {
+func TestPrompt_SetPrefixer(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.prefixer)
 
@@ -205,15 +420,18 @@ func TestPromptSetPrefixer(t *testing.T) {
 	assert.Equal(t, "> ", p.prefixer())
 }
 
-func TestPromptSetRefreshInterval(t *testing.T) {
+func TestPrompt_SetRefreshInterval(t *testing.T) {
 	p := prompt{}
 	assert.Equal(t, time.Duration(0), p.refreshInterval)
 
 	p.SetRefreshInterval(time.Second)
 	assert.Equal(t, time.Second, p.refreshInterval)
+
+	p.SetRefreshInterval(0)
+	assert.Equal(t, DefaultRefreshInterval, p.refreshInterval)
 }
 
-func TestPromptSetStyle(t *testing.T) {
+func TestPrompt_SetStyle(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.style)
 
@@ -224,7 +442,7 @@ func TestPromptSetStyle(t *testing.T) {
 	}
 }
 
-func TestPromptSetSyntaxHighlighter(t *testing.T) {
+func TestPrompt_SetSyntaxHighlighter(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.syntaxHighlighter)
 
@@ -240,7 +458,7 @@ func TestPromptSetSyntaxHighlighter(t *testing.T) {
 	}
 }
 
-func TestPromptSetTerminationChecker(t *testing.T) {
+func TestPrompt_SetTerminationChecker(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.terminationChecker)
 
@@ -255,7 +473,7 @@ func TestPromptSetTerminationChecker(t *testing.T) {
 	assert.True(t, p.terminationChecker("foo;"))
 }
 
-func TestPromptSetWidthEnforcer(t *testing.T) {
+func TestPrompt_SetWidthEnforcer(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.widthEnforcer)
 
@@ -264,10 +482,128 @@ func TestPromptSetWidthEnforcer(t *testing.T) {
 	assert.Equal(t, "foo\nbar", p.widthEnforcer("foobar", 3))
 }
 
-func TestPromptStyle(t *testing.T) {
+func TestPrompt_Style(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.Style())
 
 	p.SetStyle(StyleDefault)
 	assert.NotNil(t, p.Style())
+}
+
+func TestPrompt_changeSuggestionsIdx(t *testing.T) {
+	p := prompt{}
+	p.suggestions = testSuggestions
+	p.suggestionsIdx = 0
+
+	assert.False(t, p.changeSuggestionsIdx(0))
+	assert.Equal(t, 0, p.suggestionsIdx)
+
+	assert.True(t, p.changeSuggestionsIdx(1))
+	assert.Equal(t, 1, p.suggestionsIdx)
+
+	assert.False(t, p.changeSuggestionsIdx(1))
+	assert.Equal(t, 1, p.suggestionsIdx)
+
+	assert.True(t, p.changeSuggestionsIdx(-1))
+	assert.Equal(t, 0, p.suggestionsIdx)
+
+	assert.False(t, p.changeSuggestionsIdx(-1))
+	assert.Equal(t, 0, p.suggestionsIdx)
+}
+
+func TestPrompt_clearDebugData(t *testing.T) {
+	p := prompt{}
+	p.debugData = make(map[string]string)
+	assert.Equal(t, "n/a", p.debugDataAsString())
+
+	p.setDebugData("k1", "v1")
+	p.setDebugData("k2", "v2")
+	p.setDebugData("v1", "v1")
+	p.setDebugData("v2", "v1")
+	assert.Len(t, p.debugData, 4)
+	p.clearDebugData("k")
+	assert.Len(t, p.debugData, 2)
+	p.clearDebugData("v")
+	assert.Len(t, p.debugData, 0)
+
+	p.setDebugData("k1", "v1")
+	p.setDebugData("k2", "v2")
+	p.setDebugData("v1", "v1")
+	p.setDebugData("v2", "v1")
+	assert.Len(t, p.debugData, 4)
+	p.clearDebugData()
+	assert.Len(t, p.debugData, 0)
+}
+
+func TestPrompt_updateCursorColors(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	p := prompt{}
+	p.SetStyle(StyleDefault)
+	p.Style().Cursor.Blink = true
+	p.Style().Cursor.BlinkInterval = time.Millisecond * 20
+	p.setCursorColor(p.Style().Cursor.Color)
+
+	go p.updateCursorColors(ctx)
+	assert.Equal(t, p.Style().Cursor.Color, p.getCursorColor())
+	<-time.After(time.Millisecond * 25)
+	assert.Equal(t, p.Style().Cursor.ColorAlt, p.getCursorColor())
+	<-time.After(time.Millisecond * 25)
+	assert.Equal(t, p.Style().Cursor.Color, p.getCursorColor())
+}
+
+func TestPrompt_updateDisplayWidth(t *testing.T) {
+	p := prompt{}
+	assert.Equal(t, 0, p.displayWidth)
+	widthMin, widthMax := 80, 120
+
+	p.SetStyle(StyleDefault)
+	p.Style().Dimensions.WidthMin = uint(widthMin)
+	p.Style().Dimensions.WidthMax = uint(widthMax)
+	p.updateDisplayWidth(5)
+	assert.Equal(t, widthMin, p.displayWidth)
+
+	p.updateDisplayWidth(80)
+	assert.Equal(t, widthMin, p.displayWidth)
+
+	p.updateDisplayWidth(100)
+	assert.Equal(t, 100, p.displayWidth)
+
+	p.updateDisplayWidth(120)
+	assert.Equal(t, widthMax, p.displayWidth)
+
+	p.updateDisplayWidth(150)
+	assert.Equal(t, widthMax, p.displayWidth)
+
+	p.debug = true
+	p.updateDisplayWidth(150)
+	assert.Equal(t, widthMax-debugMarginWidth, p.displayWidth)
+}
+
+func TestPrompt_updateHeaderAndFooterAsync(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	p := prompt{}
+	p.SetRefreshInterval(time.Millisecond * 20)
+	p.SetHeaderGenerator(LineSimple("test-header"))
+	p.displayWidth = 120
+
+	go p.updateHeaderAndFooterAsync(ctx)
+	assert.Equal(t, "", p.getHeader())
+	<-time.After(time.Millisecond * 50)
+	assert.Equal(t, "test-header", p.getHeader())
+}
+
+func Test_translateKeyToKeySequence(t *testing.T) {
+	assert.Equal(t, AltA, translateKeyToKeySequence(tea.KeyMsg{
+		Alt: true, Runes: []rune{'a'},
+	}))
+	assert.Equal(t, AltB, translateKeyToKeySequence(tea.KeyMsg{
+		Alt: true, Runes: []rune{'b'},
+	}))
+	assert.Equal(t, Enter, translateKeyToKeySequence(tea.KeyMsg{
+		Type: tea.KeyEnter,
+	}))
 }

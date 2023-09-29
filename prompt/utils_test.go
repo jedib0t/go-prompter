@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCalculateViewportRange(t *testing.T) {
+func Test_calculateViewportRange(t *testing.T) {
 	start, stop := calculateViewportRange(5, -1, 5)
 	assert.Equal(t, 0, start)
 	assert.Equal(t, 4, stop)
@@ -54,7 +54,7 @@ func TestCalculateViewportRange(t *testing.T) {
 	assert.Equal(t, 7, stop)
 }
 
-func TestClampValue(t *testing.T) {
+func Test_clampValue(t *testing.T) {
 	assert.Equal(t, 5, clampValue(3, 5, 10))
 	assert.Equal(t, 5, clampValue(5, 5, 10))
 	assert.Equal(t, 7, clampValue(7, 5, 10))
@@ -66,7 +66,7 @@ func TestClampValue(t *testing.T) {
 	assert.Equal(t, 5, clampValue(6, 0, 5))
 }
 
-func TestInsertCursor(t *testing.T) {
+func Test_insertCursor(t *testing.T) {
 	input := "\x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m"
 
 	expectedOutput := "\x1b[38;5;81m\x1b[0m\x1b[38;5;232;48;5;6ms\x1b[0m\x1b[38;5;81melect\x1b[0m\x1b[38;5;231m"
@@ -78,7 +78,7 @@ func TestInsertCursor(t *testing.T) {
 	assert.Equal(t, expectedOutput, output)
 }
 
-func TestOverwriteContent(t *testing.T) {
+func Test_overwriteContent(t *testing.T) {
 	colorContent := Color{
 		Foreground: termenv.ANSI256Color(0),
 		Background: termenv.ANSI256Color(12),
@@ -165,7 +165,7 @@ func TestOverwriteContent(t *testing.T) {
 	})
 }
 
-func BenchmarkStringSubset(b *testing.B) {
+func Benchmark_stringSubset(b *testing.B) {
 	color1 := Color{
 		Foreground: termenv.ANSI256Color(0),
 		Background: termenv.ANSI256Color(12),
@@ -178,7 +178,7 @@ func BenchmarkStringSubset(b *testing.B) {
 	}
 }
 
-func TestStringSubset(t *testing.T) {
+func Test_stringSubset(t *testing.T) {
 	color1 := Color{
 		Foreground: termenv.ANSI256Color(0),
 		Background: termenv.ANSI256Color(12),

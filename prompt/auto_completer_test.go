@@ -19,14 +19,6 @@ func BenchmarkAutoComplete(b *testing.B) {
 	}
 }
 
-func TestSuggestionString(t *testing.T) {
-	s := Suggestion{
-		Value: "val",
-		Hint:  "hint",
-	}
-	assert.Equal(t, "val: hint", s.String())
-}
-
 func TestAutoCompleteGoLangKeywords(t *testing.T) {
 	ac := AutoCompleteGoLangKeywords()
 
@@ -161,4 +153,12 @@ func TestAutoCompleteWords(t *testing.T) {
 		assert.Equal(t, "bar", matches[1].Value)
 		assert.Equal(t, "foo", matches[2].Value)
 	})
+}
+
+func TestSuggestion_String(t *testing.T) {
+	s := Suggestion{
+		Value: "val",
+		Hint:  "hint",
+	}
+	assert.Equal(t, "val: hint", s.String())
 }

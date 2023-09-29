@@ -2,11 +2,9 @@ package prompt
 
 import (
 	"context"
-	"fmt"
+	"io"
 	"os"
 	"time"
-
-	"github.com/mattn/go-isatty"
 )
 
 // Prompter in the interface to create and manage a shell-like interactive
@@ -96,8 +94,16 @@ type Prompter interface {
 	//   - !! 10 == list last 10 commands
 	SetHistoryListPrefix(prefix string)
 
+	// SetInput sets up the input to be read from the given io.Reader instead of
+	// os.Stdin.
+	SetInput(input io.Reader)
+
 	// SetKeyMap sets up the KeyMap used for interacting with the user's input.
 	SetKeyMap(keyMap KeyMap) error
+
+	// SetOutput sets up the output to go to the given io.Writer instead of
+	// os.Stdout.
+	SetOutput(output io.Writer)
 
 	// SetPrefix sets up the prefix to use before the prompt.
 	//
@@ -147,20 +153,17 @@ type Prompter interface {
 // - the default style with a 500ms cursor blink
 // - no termination checker (i.e., Enter terminates command)
 func New() (Prompter, error) {
-	// ensure the user can send input to the prompt
-	if !isatty.IsTerminal(os.Stdin.Fd()) {
-		return nil, fmt.Errorf("cannot prompt on a %w", ErrNonInteractiveShell)
-	}
-
 	p := &prompt{}
 	err := p.SetKeyMap(KeyMapDefault)
 	if err != nil {
 		return nil, err
 	}
-	p.SetHistoryExecPrefix("!")
-	p.SetHistoryListPrefix("!!")
+	p.SetHistoryExecPrefix(DefaultHistoryExecPrefix)
+	p.SetHistoryListPrefix(DefaultHistoryListPrefix)
+	p.SetInput(os.Stdin)
+	p.SetOutput(os.Stdout)
 	p.SetPrefixer(PrefixSimple())
-	p.SetRefreshInterval(defaultRefreshInterval)
+	p.SetRefreshInterval(DefaultRefreshInterval)
 	p.SetStyle(StyleDefault)
 	p.SetTerminationChecker(TerminationCheckerNone())
 	p.SetWidthEnforcer(WidthEnforcerDefault)

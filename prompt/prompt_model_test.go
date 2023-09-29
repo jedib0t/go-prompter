@@ -3,6 +3,7 @@ package prompt
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -40,8 +41,10 @@ func generateTestPrompt(t *testing.T, ctx context.Context) *prompt {
 	}
 	p.SetHistoryExecPrefix("!")
 	p.SetHistoryListPrefix("!!")
+	p.SetInput(os.Stdin)
+	p.SetOutput(os.Stdout)
 	p.SetPrefixer(PrefixText("[" + t.Name() + "] "))
-	p.SetRefreshInterval(defaultRefreshInterval)
+	p.SetRefreshInterval(DefaultRefreshInterval)
 	p.SetStyle(StyleDefault)
 	p.SetTerminationChecker(TerminationCheckerNone())
 	p.SetWidthEnforcer(WidthEnforcerDefault)
@@ -52,7 +55,7 @@ func generateTestPrompt(t *testing.T, ctx context.Context) *prompt {
 	return p
 }
 
-func TestPromptUpdateModel(t *testing.T) {
+func TestPrompt_updateModel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -70,7 +73,7 @@ func TestPromptUpdateModel(t *testing.T) {
 		p.buffer.InsertString(`select` + ` * from dual`)
 		p.updateModel(true)
 		expectedLines := []string{
-			"[TestPromptUpdateModel/simple_one-liner] \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
+			"[TestPrompt_updateModel/simple_one-liner] \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
 		}
 		compareModelLines(t, expectedLines, p.linesToRender)
 	})
@@ -85,7 +88,7 @@ func TestPromptUpdateModel(t *testing.T) {
 		p.buffer.InsertString(`select` + ` * from dual`)
 		p.updateModel(true)
 		expectedLines := []string{
-			"[TestPromptUpdateModel/simple_one-liner_with_line-numbers] \x1b[38;5;240;48;5;236m 1 \x1b[0m \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
+			"[TestPrompt_updateModel/simple_one-liner_with_line-numbers] \x1b[38;5;240;48;5;236m 1 \x1b[0m \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
 		}
 		compareModelLines(t, expectedLines, p.linesToRender)
 	})
@@ -101,12 +104,12 @@ func TestPromptUpdateModel(t *testing.T) {
 		p.updateSuggestionsInternal("", "", -1)
 		p.updateModel(true)
 		expectedLines := []string{
-			"[TestPromptUpdateModel/with_auto-complete] \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;231m",
-			"[TestPromptUpdateModel/with_auto-complete]   \x1b[0m\x1b[38;5;81mwhere\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mrow\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
-			"[TestPromptUpdateModel/with_auto-complete]        \x1b[38;5;16;48;5;214m row       \x1b[0m\x1b[38;5;16;48;5;208m                \x1b[0m",
-			"[TestPromptUpdateModel/with_auto-complete]        \x1b[38;5;16;48;5;45m row_count \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
-			"[TestPromptUpdateModel/with_auto-complete]        \x1b[38;5;16;48;5;45m rownum    \x1b[0m\x1b[38;5;0;48;5;39m Number of Rows \x1b[0m",
-			"[TestPromptUpdateModel/with_auto-complete]        \x1b[38;5;16;48;5;45m rows      \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
+			"[TestPrompt_updateModel/with_auto-complete] \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;231m",
+			"[TestPrompt_updateModel/with_auto-complete]   \x1b[0m\x1b[38;5;81mwhere\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mrow\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
+			"[TestPrompt_updateModel/with_auto-complete]        \x1b[38;5;16;48;5;214m row       \x1b[0m\x1b[38;5;16;48;5;208m                \x1b[0m",
+			"[TestPrompt_updateModel/with_auto-complete]        \x1b[38;5;16;48;5;45m row_count \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
+			"[TestPrompt_updateModel/with_auto-complete]        \x1b[38;5;16;48;5;45m rownum    \x1b[0m\x1b[38;5;0;48;5;39m Number of Rows \x1b[0m",
+			"[TestPrompt_updateModel/with_auto-complete]        \x1b[38;5;16;48;5;45m rows      \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
 		}
 		compareModelLines(t, expectedLines, p.linesToRender)
 	})

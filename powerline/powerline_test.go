@@ -51,7 +51,7 @@ func BenchmarkPowerlineRender(b *testing.B) {
 	}
 }
 
-func TestPowerlineRender(t *testing.T) {
+func TestPowerline_Render(t *testing.T) {
 	segUser := &Segment{}
 	segUser.SetContent("username")
 	segUser.SetIcon("👤")
