@@ -192,22 +192,6 @@ func TestPrompt_SendInput(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("send []rune", func(t *testing.T) {
-		mc := gomock.NewController(t)
-		defer mc.Finish()
-		mockReader := mock_input.NewMockReader(mc)
-		gomock.InOrder(
-			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}}),
-			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'b'}}),
-			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'c'}}),
-		)
-
-		p := generateTestPrompt(t, ctx)
-		p.reader = mockReader
-		err := p.SendInput([]any{[]rune{'a', 'b', 'c'}})
-		assert.Nil(t, err)
-	})
-
 	t.Run("send string error", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
@@ -222,20 +206,24 @@ func TestPrompt_SendInput(t *testing.T) {
 		assert.Equal(t, errFoo, err)
 	})
 
-	t.Run("send string", func(t *testing.T) {
+	t.Run("send string/[]rune", func(t *testing.T) {
 		mc := gomock.NewController(t)
 		defer mc.Finish()
-		mockReader := mock_input.NewMockReader(mc)
-		gomock.InOrder(
-			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}}),
-			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'b'}}),
-			mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'c'}}),
-		)
 
-		p := generateTestPrompt(t, ctx)
-		p.reader = mockReader
-		err := p.SendInput([]any{"abc"})
-		assert.Nil(t, err)
+		for _, input := range []any{"abc", []rune("abc")} {
+			mockReader := mock_input.NewMockReader(mc)
+			gomock.InOrder(
+				mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'a'}}),
+				mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'b'}}),
+				mockReader.EXPECT().Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'c'}}),
+			)
+
+			p := generateTestPrompt(t, ctx)
+			p.reader = mockReader
+			err := p.SendInput([]any{input})
+			assert.Nil(t, err)
+
+		}
 	})
 
 	t.Run("send unsupported", func(t *testing.T) {
