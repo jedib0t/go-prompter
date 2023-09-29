@@ -230,7 +230,7 @@ func (p *prompt) handleKeyAutoComplete(output *termenv.Output, key tea.KeyMsg) e
 }
 
 func (p *prompt) handleKeyInsert(output *termenv.Output, key tea.KeyMsg) error {
-	ks := p.translateKeyToKeySequence(key)
+	ks := translateKeyToKeySequence(key)
 	if shortcut, ok := p.shortcuts[ks]; ok {
 		p.buffer.Set(shortcut)
 		p.buffer.MarkAsDone()

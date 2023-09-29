@@ -3,6 +3,7 @@ package prompt
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strings"
@@ -15,8 +16,12 @@ import (
 	"golang.org/x/term"
 )
 
-var (
-	defaultRefreshInterval = time.Second / 60 // 60hz
+const (
+	DefaultHistoryExecPrefix = "!"              // !13 => exec 13th command in history
+	DefaultHistoryListPrefix = "!!"             // !! => list all history
+	DefaultRefreshInterval   = time.Second / 60 // 60hz
+
+	debugMarginWidth = 4
 )
 
 type prompt struct {
@@ -24,13 +29,17 @@ type prompt struct {
 	autoCompleterContextual AutoCompleter
 	debug                   bool
 	footerGenerator         LineGenerator
+	footerGeneratorMutex    sync.RWMutex
 	isInAutoComplete        bool
 	headerGenerator         LineGenerator
+	headerGeneratorMutex    sync.RWMutex
 	history                 History
 	historyExecPrefix       string
 	historyListPrefix       string
+	input                   io.Reader
 	keyMap                  KeyMap
 	keyMapReversed          *keyMapReversed
+	output                  io.Writer
 	prefixer                Prefixer
 	promptMutex             sync.Mutex
 	refreshInterval         time.Duration
@@ -60,6 +69,7 @@ type prompt struct {
 	linesRendered               []string
 	linesToRender               []string
 	reader                      input.Reader
+	readerMutex                 sync.Mutex
 	renderingPaused             bool
 	renderingPausedMutex        sync.RWMutex
 	suggestions                 []Suggestion
@@ -123,7 +133,7 @@ func (p *prompt) Prompt(ctx context.Context) (string, error) {
 	}
 
 	// init output
-	output := termenv.NewOutput(os.Stdout)
+	output := termenv.NewOutput(p.getOutputWriter())
 	defer func() {
 		output.Reset()
 	}()
@@ -218,25 +228,31 @@ func (p *prompt) SetDebug(debug bool) {
 
 // SetFooter sets up the footer line above the prompt line for each render
 // cycle.
-func (p *prompt) SetFooter(header string) {
-	p.footerGenerator = LineSimple(header)
+func (p *prompt) SetFooter(footer string) {
+	p.SetFooterGenerator(LineSimple(footer))
 }
 
 // SetFooterGenerator sets up the FooterGenerator to be used to generate the
 // footer line below the prompt line for each render cycle.
 func (p *prompt) SetFooterGenerator(footer LineGenerator) {
+	p.footerGeneratorMutex.Lock()
+	defer p.footerGeneratorMutex.Unlock()
+
 	p.footerGenerator = footer
 }
 
 // SetHeader sets up the header line above the prompt line for each render
 // cycle.
 func (p *prompt) SetHeader(header string) {
-	p.headerGenerator = LineSimple(header)
+	p.SetHeaderGenerator(LineSimple(header))
 }
 
 // SetHeaderGenerator sets up the HeaderGenerator to be used to generate the
 // header line above the prompt line for each render cycle.
 func (p *prompt) SetHeaderGenerator(header LineGenerator) {
+	p.headerGeneratorMutex.Lock()
+	defer p.headerGeneratorMutex.Unlock()
+
 	p.headerGenerator = header
 }
 
@@ -264,6 +280,13 @@ func (p *prompt) SetHistoryListPrefix(prefix string) {
 	p.historyListPrefix = prefix
 }
 
+// SetInput sets up the input to be read from the given io.Reader instead of
+// os.Stdin.
+func (p *prompt) SetInput(r io.Reader) {
+	p.input = r
+	p.initReader(true)
+}
+
 // SetKeyMap sets up the KeyMap used for interacting with the user's input.
 func (p *prompt) SetKeyMap(keyMap KeyMap) error {
 	kmr, err := keyMap.reverse()
@@ -274,6 +297,12 @@ func (p *prompt) SetKeyMap(keyMap KeyMap) error {
 	p.keyMap = keyMap
 	p.keyMapReversed = kmr
 	return nil
+}
+
+// SetOutput sets up the output to go to the given io.Writer instead of
+// os.Stdout.
+func (p *prompt) SetOutput(o io.Writer) {
+	p.output = o
 }
 
 // SetPrefix sets up the prefix to use before the prompt.
@@ -300,7 +329,7 @@ func (p *prompt) SetRefreshInterval(interval time.Duration) {
 	if interval > 0 {
 		p.refreshInterval = interval
 	} else {
-		p.refreshInterval = defaultRefreshInterval
+		p.refreshInterval = DefaultRefreshInterval
 	}
 }
 
@@ -375,7 +404,7 @@ func (p *prompt) debugDataAsString() string {
 	defer p.debugDataMutex.RUnlock()
 
 	if len(p.debugData) == 0 {
-		return "none"
+		return "n/a"
 	}
 
 	var nvps []string
@@ -432,13 +461,6 @@ func (p *prompt) getDisplayWidth() int {
 	return p.displayWidth
 }
 
-func (p *prompt) getSuggestionsAndIdx() ([]Suggestion, int) {
-	p.suggestionsMutex.RLock()
-	defer p.suggestionsMutex.RUnlock()
-
-	return append([]Suggestion{}, p.suggestions...), p.suggestionsIdx
-}
-
 func (p *prompt) getFooter() string {
 	p.footerMutex.RLock()
 	defer p.footerMutex.RUnlock()
@@ -453,12 +475,47 @@ func (p *prompt) getHeader() string {
 	return p.header
 }
 
+func (p *prompt) getInputReader() io.Reader {
+	if p.input != nil {
+		return p.input
+	}
+	return os.Stdin
+}
+
+func (p *prompt) getOutputWriter() io.Writer {
+	if p.output != nil {
+		return p.output
+	}
+	return os.Stdout
+}
+
+func (p *prompt) getSuggestionsAndIdx() ([]Suggestion, int) {
+	p.suggestionsMutex.RLock()
+	defer p.suggestionsMutex.RUnlock()
+
+	return append([]Suggestion{}, p.suggestions...), p.suggestionsIdx
+}
+
 func (p *prompt) init(ctx context.Context) {
 	p.initSync(ctx)
 
-	go p.switchCursorColors(ctx)
+	go p.updateCursorColors(ctx)
 	go p.updateSuggestions(ctx)
 	go p.updateHeaderAndFooterAsync(ctx)
+}
+
+func (p *prompt) initReader(force bool) {
+	p.readerMutex.Lock()
+	defer p.readerMutex.Unlock()
+
+	if p.reader != nil && !force {
+		_ = p.reader.Reset()
+	} else {
+		p.reader = input.NewReader(
+			input.WithInput(p.getInputReader()),
+			input.WatchWindowSize(),
+		)
+	}
 }
 
 func (p *prompt) initSync(ctx context.Context) {
@@ -481,11 +538,7 @@ func (p *prompt) initSync(ctx context.Context) {
 	p.linesMutex.Unlock()
 
 	// clear/reset the reader
-	if p.reader == nil {
-		p.reader = input.NewReader(input.WatchWindowSize())
-	} else {
-		_ = p.reader.Reset()
-	}
+	p.initReader(false)
 
 	// clear other things
 	p.clearDebugData()
@@ -583,7 +636,15 @@ func (p *prompt) setSuggestionsIdx(idx int) {
 	p.suggestionsIdx = idx
 }
 
-func (p *prompt) switchCursorColors(ctx context.Context) {
+func (p *prompt) translateKeyToAutoCompleteAction(key tea.KeyMsg) Action {
+	return p.keyMapReversed.AutoComplete[translateKeyToKeySequence(key)]
+}
+
+func (p *prompt) translateKeyToInsertAction(key tea.KeyMsg) Action {
+	return p.keyMapReversed.Insert[translateKeyToKeySequence(key)]
+}
+
+func (p *prompt) updateCursorColors(ctx context.Context) {
 	if p.style.Cursor.Blink {
 		isLow := true
 		tick := time.Tick(p.style.Cursor.BlinkInterval)
@@ -604,24 +665,6 @@ func (p *prompt) switchCursorColors(ctx context.Context) {
 	}
 }
 
-func (p *prompt) translateKeyToKeySequence(key tea.KeyMsg) KeySequence {
-	var ks KeySequence
-	if key.Alt == true && len(key.Runes) > 0 {
-		ks = altKeySequenceMap[key.Runes[0]]
-	} else {
-		ks = keyTypeKeySequenceMap[key.Type]
-	}
-	return ks
-}
-
-func (p *prompt) translateKeyToAutoCompleteAction(key tea.KeyMsg) Action {
-	return p.keyMapReversed.AutoComplete[p.translateKeyToKeySequence(key)]
-}
-
-func (p *prompt) translateKeyToInsertAction(key tea.KeyMsg) Action {
-	return p.keyMapReversed.Insert[p.translateKeyToKeySequence(key)]
-}
-
 func (p *prompt) updateDisplayWidth(termWidth int) {
 	termWidth = clampValue(
 		termWidth,
@@ -629,37 +672,59 @@ func (p *prompt) updateDisplayWidth(termWidth int) {
 		int(p.style.Dimensions.WidthMax),
 	)
 	if p.debug {
-		termWidth -= 4 // account for debug margin
+		termWidth -= debugMarginWidth
 	}
 	p.setDisplayWidth(termWidth)
 }
 
 func (p *prompt) updateHeaderAndFooter() {
+	p.headerGeneratorMutex.RLock()
 	if p.headerGenerator != nil {
 		header := p.headerGenerator(p.getDisplayWidth())
 		p.headerMutex.Lock()
 		p.header = header
 		p.headerMutex.Unlock()
 	}
+	p.headerGeneratorMutex.RUnlock()
 
+	p.footerGeneratorMutex.RLock()
 	if p.footerGenerator != nil {
 		footer := p.footerGenerator(p.getDisplayWidth())
 		p.footerMutex.Lock()
 		p.footer = footer
 		p.footerMutex.Unlock()
 	}
+	p.footerGeneratorMutex.RUnlock()
 }
 
 func (p *prompt) updateHeaderAndFooterAsync(ctx context.Context) {
-	if p.headerGenerator != nil {
-		tick := time.Tick(p.refreshInterval)
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-tick:
-				p.updateHeaderAndFooter()
-			}
+	p.headerGeneratorMutex.RLock()
+	p.footerGeneratorMutex.RLock()
+	if p.headerGenerator == nil && p.footerGenerator == nil {
+		p.footerGeneratorMutex.RUnlock()
+		p.headerGeneratorMutex.RUnlock()
+		return
+	}
+	p.footerGeneratorMutex.RUnlock()
+	p.headerGeneratorMutex.RUnlock()
+
+	tick := time.Tick(p.refreshInterval)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-tick:
+			p.updateHeaderAndFooter()
 		}
 	}
+}
+
+func translateKeyToKeySequence(key tea.KeyMsg) KeySequence {
+	var ks KeySequence
+	if key.Alt == true && len(key.Runes) > 0 {
+		ks = altKeySequenceMap[key.Runes[0]]
+	} else {
+		ks = keyTypeKeySequenceMap[key.Type]
+	}
+	return ks
 }

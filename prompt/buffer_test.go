@@ -13,7 +13,7 @@ func getNewBuffer(t *testing.T) *buffer {
 	return b
 }
 
-func TestBufferCursor(t *testing.T) {
+func TestBuffer_Cursor(t *testing.T) {
 	b := getNewBuffer(t)
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.Cursor())
 
@@ -21,7 +21,7 @@ func TestBufferCursor(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, b.Cursor())
 }
 
-func TestBufferDeleteBackward(t *testing.T) {
+func TestBuffer_DeleteBackward(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.lines = []string{"abc", "def"}
@@ -69,7 +69,7 @@ func TestBufferDeleteBackward(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
 }
 
-func TestBufferDeleteBackwardToBeginningOfLine(t *testing.T) {
+func TestBuffer_DeleteBackwardToBeginningOfLine(t *testing.T) {
 	b := getNewBuffer(t)
 	b.InsertString("foo bar baz")
 	b.MoveWordLeft()
@@ -78,7 +78,7 @@ func TestBufferDeleteBackwardToBeginningOfLine(t *testing.T) {
 	assert.Equal(t, "baz", b.String())
 }
 
-func TestBufferDeleteForward(t *testing.T) {
+func TestBuffer_DeleteForward(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.lines = []string{"abc", "def"}
@@ -132,7 +132,7 @@ func TestBufferDeleteForward(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 2}, b.cursor)
 }
 
-func TestBufferDeleteForwardToEndOfLine(t *testing.T) {
+func TestBuffer_DeleteForwardToEndOfLine(t *testing.T) {
 	b := getNewBuffer(t)
 	b.InsertString("foo baz bar")
 	b.MoveWordLeft()
@@ -142,7 +142,7 @@ func TestBufferDeleteForwardToEndOfLine(t *testing.T) {
 	assert.Equal(t, "foo ", b.String())
 }
 
-func TestBufferDeleteWordBackward(t *testing.T) {
+func TestBuffer_DeleteWordBackward(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.lines = []string{"abc def"}
@@ -206,7 +206,7 @@ func TestBufferDeleteWordBackward(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
 }
 
-func TestBufferDeleteWordForward(t *testing.T) {
+func TestBuffer_DeleteWordForward(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.lines = []string{"abc def"}
@@ -261,7 +261,7 @@ func TestBufferDeleteWordForward(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
 }
 
-func TestBufferDisplay(t *testing.T) {
+func TestBuffer_Display(t *testing.T) {
 	b := getNewBuffer(t)
 
 	lines, cur := b.Display()
@@ -274,7 +274,7 @@ func TestBufferDisplay(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, cur)
 }
 
-func TestBufferHasChanges(t *testing.T) {
+func TestBuffer_HasChanges(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.linesChanged.Clear()
@@ -293,7 +293,7 @@ func TestBufferHasChanges(t *testing.T) {
 	assert.False(t, b.HasChanges())
 }
 
-func TestBufferInsert(t *testing.T) {
+func TestBuffer_Insert(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.Insert('\n')
@@ -367,7 +367,7 @@ func TestBufferInsert(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 5}, b.cursor)
 }
 
-func TestBufferIsDone(t *testing.T) {
+func TestBuffer_IsDone(t *testing.T) {
 	b := getNewBuffer(t)
 	assert.False(t, b.IsDone())
 
@@ -375,7 +375,7 @@ func TestBufferIsDone(t *testing.T) {
 	assert.True(t, b.IsDone())
 }
 
-func TestBufferLength(t *testing.T) {
+func TestBuffer_Length(t *testing.T) {
 	b := getNewBuffer(t)
 	assert.Equal(t, 0, b.Length())
 
@@ -389,7 +389,7 @@ func TestBufferLength(t *testing.T) {
 	assert.Equal(t, 7, b.Length())
 }
 
-func TestBufferLines(t *testing.T) {
+func TestBuffer_Lines(t *testing.T) {
 	b := getNewBuffer(t)
 	assert.Equal(t, []string{""}, b.Lines())
 
@@ -400,7 +400,7 @@ func TestBufferLines(t *testing.T) {
 	assert.Equal(t, []string{"foo", "bar", ""}, b.Lines())
 }
 
-func TestBufferMakeWordCapitalCase(t *testing.T) {
+func TestBuffer_MakeWordCapitalCase(t *testing.T) {
 	b := getNewBuffer(t)
 	b.MakeWordCapitalCase()
 
@@ -420,7 +420,7 @@ func TestBufferMakeWordCapitalCase(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 2, Column: 3}, b.cursor)
 }
 
-func TestBufferMakeWordLowerCase(t *testing.T) {
+func TestBuffer_MakeWordLowerCase(t *testing.T) {
 	b := getNewBuffer(t)
 	b.MakeWordLowerCase()
 	b.lines = []string{"ABC", "DEF", "GHI"}
@@ -439,7 +439,7 @@ func TestBufferMakeWordLowerCase(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 2, Column: 3}, b.cursor)
 }
 
-func TestBufferMakeWordUpperCase(t *testing.T) {
+func TestBuffer_MakeWordUpperCase(t *testing.T) {
 	b := getNewBuffer(t)
 	b.MakeWordUpperCase()
 	b.lines = []string{"abc", "def", "ghi"}
@@ -458,7 +458,7 @@ func TestBufferMakeWordUpperCase(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 2, Column: 3}, b.cursor)
 }
 
-func TestBufferMarkAsDone(t *testing.T) {
+func TestBuffer_MarkAsDone(t *testing.T) {
 	b := getNewBuffer(t)
 	assert.False(t, b.done)
 
@@ -466,7 +466,7 @@ func TestBufferMarkAsDone(t *testing.T) {
 	assert.True(t, b.done)
 }
 
-func TestBufferMoveDown(t *testing.T) {
+func TestBuffer_MoveDown(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.cursor = CursorLocation{Line: 0, Column: 0}
@@ -491,7 +491,7 @@ func TestBufferMoveDown(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, b.cursor)
 }
 
-func TestBufferMoveLeft(t *testing.T) {
+func TestBuffer_MoveLeft(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.cursor = CursorLocation{Line: 0, Column: 0}
@@ -539,7 +539,7 @@ func TestBufferMoveLeft(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
 }
 
-func TestBufferMoveRight(t *testing.T) {
+func TestBuffer_MoveRight(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.MoveRight(1)
@@ -591,7 +591,7 @@ func TestBufferMoveRight(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, b.cursor)
 }
 
-func TestBufferMoveToBeginning(t *testing.T) {
+func TestBuffer_MoveToBeginning(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.InsertString("foo")
@@ -599,7 +599,7 @@ func TestBufferMoveToBeginning(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.Cursor())
 }
 
-func TestBufferMoveToBeginningOfLine(t *testing.T) {
+func TestBuffer_MoveToBeginningOfLine(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.cursor = CursorLocation{Line: 0, Column: 0}
@@ -620,7 +620,7 @@ func TestBufferMoveToBeginningOfLine(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
 }
 
-func TestBufferMoveToEnd(t *testing.T) {
+func TestBuffer_MoveToEnd(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.InsertString("foo")
@@ -628,7 +628,7 @@ func TestBufferMoveToEnd(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 3}, b.Cursor())
 }
 
-func TestBufferMoveToEndOfLine(t *testing.T) {
+func TestBuffer_MoveToEndOfLine(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.cursor = CursorLocation{Line: 0, Column: 0}
@@ -653,7 +653,7 @@ func TestBufferMoveToEndOfLine(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 3}, b.cursor)
 }
 
-func TestBufferMoveUp(t *testing.T) {
+func TestBuffer_MoveUp(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.cursor = CursorLocation{Line: 0, Column: 0}
@@ -678,7 +678,7 @@ func TestBufferMoveUp(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 3}, b.cursor)
 }
 
-func TestBufferMoveWordLeft(t *testing.T) {
+func TestBuffer_MoveWordLeft(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.cursor = CursorLocation{Line: 0, Column: 0}
@@ -715,7 +715,7 @@ func TestBufferMoveWordLeft(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
 }
 
-func TestBufferMoveWordRight(t *testing.T) {
+func TestBuffer_MoveWordRight(t *testing.T) {
 	b := getNewBuffer(t)
 
 	b.cursor = CursorLocation{Line: 0, Column: 0}
@@ -748,7 +748,7 @@ func TestBufferMoveWordRight(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 1, Column: 0}, b.cursor)
 }
 
-func TestBufferNumLines(t *testing.T) {
+func TestBuffer_NumLines(t *testing.T) {
 	b := getNewBuffer(t)
 	assert.Equal(t, 1, b.NumLines())
 
@@ -756,7 +756,7 @@ func TestBufferNumLines(t *testing.T) {
 	assert.Equal(t, 2, b.NumLines())
 }
 
-func TestBufferReset(t *testing.T) {
+func TestBuffer_Reset(t *testing.T) {
 	b := getNewBuffer(t)
 	b.InsertString("foo")
 
@@ -766,7 +766,7 @@ func TestBufferReset(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
 }
 
-func TestBufferSet(t *testing.T) {
+func TestBuffer_Set(t *testing.T) {
 	b := getNewBuffer(t)
 	b.tab = "    "
 
@@ -775,7 +775,7 @@ func TestBufferSet(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 1, Column: 27}, b.cursor)
 }
 
-func TestBufferString(t *testing.T) {
+func TestBuffer_String(t *testing.T) {
 	b := getNewBuffer(t)
 	assert.Equal(t, "", b.String())
 
@@ -789,7 +789,7 @@ func TestBufferString(t *testing.T) {
 	assert.Equal(t, "abc\ndef", b.String())
 }
 
-func TestBufferGetWordAtCursor(t *testing.T) {
+func TestBuffer_getWordAtCursor(t *testing.T) {
 	b := getNewBuffer(t)
 	b.InsertString("foo bar baz foo")
 

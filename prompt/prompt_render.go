@@ -22,9 +22,11 @@ func (p *prompt) render(ctx context.Context, output *termenv.Output) (rsp string
 	}()
 
 	// instantiate an input reader and begin looking for inputs
+	p.readerMutex.Lock()
 	go p.reader.Begin(ctx)
 	defer func() {
 		p.reader.End()
+		p.readerMutex.Unlock()
 	}()
 
 	// first time render

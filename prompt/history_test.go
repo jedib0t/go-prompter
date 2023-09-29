@@ -24,7 +24,7 @@ var (
 	}
 )
 
-func TestHistoryAppend(t *testing.T) {
+func TestHistory_Append(t *testing.T) {
 	h := History{}
 	assert.Len(t, h.Commands, 0)
 
@@ -35,7 +35,7 @@ func TestHistoryAppend(t *testing.T) {
 	assert.Len(t, h.Commands, 2)
 }
 
-func TestHistoryGet(t *testing.T) {
+func TestHistory_Get(t *testing.T) {
 	h := History{}
 	for _, cmd := range testHistoryCommands {
 		h.Append(cmd.Command)
@@ -46,7 +46,7 @@ func TestHistoryGet(t *testing.T) {
 	assert.Equal(t, "", h.Get(2))
 }
 
-func TestHistoryGetNext(t *testing.T) {
+func TestHistory_GetNext(t *testing.T) {
 	h := History{}
 	for _, cmd := range testHistoryCommands {
 		h.Append(cmd.Command)
@@ -58,7 +58,7 @@ func TestHistoryGetNext(t *testing.T) {
 	assert.Equal(t, "", h.GetNext())
 }
 
-func TestHistoryGetPrev(t *testing.T) {
+func TestHistory_GetPrev(t *testing.T) {
 	h := History{}
 	for _, cmd := range testHistoryCommands {
 		h.Append(cmd.Command)
@@ -69,7 +69,7 @@ func TestHistoryGetPrev(t *testing.T) {
 	assert.Equal(t, testHistoryCommands[0].Command, h.GetPrev())
 }
 
-func TestHistoryRender(t *testing.T) {
+func TestHistory_Render(t *testing.T) {
 	h := History{}
 	for _, cmd := range testHistoryCommands {
 		h.Append(cmd.Command, time.Time(cmd.Timestamp))
@@ -104,7 +104,7 @@ func TestHistoryRender(t *testing.T) {
 	assert.Equal(t, expected, h.Render(3, 0))
 }
 
-func TestPromptProcessHistoryCommand(t *testing.T) {
+func TestPrompt_processHistoryCommand(t *testing.T) {
 	p := generateTestPrompt(t, context.Background())
 	p.SetHistory([]HistoryCommand{
 		{Command: "foo"},

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStyleValidate(t *testing.T) {
+func TestStyle_Validate(t *testing.T) {
 	s := StyleDefault
 	err := s.Validate()
 	assert.Nil(t, err)
@@ -30,7 +30,7 @@ func TestStyleValidate(t *testing.T) {
 	assert.Contains(t, err.Error(), "width-min [50] cannot be greater than width-max [40]")
 }
 
-func TestScrollbarGenerate(t *testing.T) {
+func TestStyleScrollbar_Generate(t *testing.T) {
 	s := StyleScrollbarDefault
 
 	expectedLines := []string{

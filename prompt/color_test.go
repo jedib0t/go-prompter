@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestColorInvert(t *testing.T) {
+func TestColor_Invert(t *testing.T) {
 	c := Color{
 		Foreground: termenv.ANSI256Color(194),
 		Background: termenv.ANSI256Color(56),
@@ -20,7 +20,7 @@ func TestColorInvert(t *testing.T) {
 	assert.Equal(t, termenv.ANSI256Color(194), c2.Background)
 }
 
-func TestColorSprint(t *testing.T) {
+func TestColor_Sprint(t *testing.T) {
 	c := Color{}
 	assert.Equal(t, "foo", c.Sprint("foo"))
 
@@ -31,7 +31,7 @@ func TestColorSprint(t *testing.T) {
 	assert.Equal(t, "\x1b[38;5;194;48;5;56mfoo\x1b[0m", c.Sprint("foo"))
 }
 
-func TestColorSprintf(t *testing.T) {
+func TestColor_Sprintf(t *testing.T) {
 	c := Color{
 		Foreground: termenv.ANSI256Color(194),
 		Background: termenv.ANSI256Color(56),
