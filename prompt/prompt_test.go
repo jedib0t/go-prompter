@@ -11,7 +11,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestPrompt_CursorLocation(t *testing.T) {
+func TestPromptCursorLocation(t *testing.T) {
 	p := &prompt{}
 	assert.Equal(t, CursorLocation{}, p.CursorLocation())
 
@@ -23,7 +23,7 @@ func TestPrompt_CursorLocation(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 1, Column: 0}, p.CursorLocation())
 }
 
-func TestPrompt_History(t *testing.T) {
+func TestPromptHistory(t *testing.T) {
 	p := prompt{}
 	assert.Empty(t, p.History())
 
@@ -35,7 +35,7 @@ func TestPrompt_History(t *testing.T) {
 	}
 }
 
-func TestPrompt_KeyMap(t *testing.T) {
+func TestPromptKeyMap(t *testing.T) {
 	p := prompt{}
 	assert.NotEqual(t, KeyMapDefault, p.keyMap)
 
@@ -50,7 +50,7 @@ func TestPrompt_KeyMap(t *testing.T) {
 	}
 }
 
-func TestPrompt_NumLines(t *testing.T) {
+func TestPromptNumLines(t *testing.T) {
 	p := prompt{}
 	assert.Zero(t, p.NumLines())
 
@@ -62,7 +62,7 @@ func TestPrompt_NumLines(t *testing.T) {
 	assert.Equal(t, 2, p.NumLines())
 }
 
-func TestPrompt_Prompt(t *testing.T) {
+func TestPromptPrompt(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -92,7 +92,7 @@ func TestPrompt_Prompt(t *testing.T) {
 	assert.Equal(t, ErrAborted, err)
 }
 
-func TestPrompt_SetAutoCompleter(t *testing.T) {
+func TestPromptSetAutoCompleter(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.autoCompleter)
 
@@ -100,7 +100,7 @@ func TestPrompt_SetAutoCompleter(t *testing.T) {
 	assert.NotNil(t, p.autoCompleter)
 }
 
-func TestPrompt_SetAutoCompleterContextual(t *testing.T) {
+func TestPromptSetAutoCompleterContextual(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.autoCompleterContextual)
 
@@ -108,7 +108,7 @@ func TestPrompt_SetAutoCompleterContextual(t *testing.T) {
 	assert.NotNil(t, p.autoCompleterContextual)
 }
 
-func TestPrompt_SetCommandShortcuts(t *testing.T) {
+func TestPromptSetCommandShortcuts(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.shortcuts)
 
@@ -121,7 +121,7 @@ func TestPrompt_SetCommandShortcuts(t *testing.T) {
 	assert.Contains(t, p.shortcuts, F1)
 }
 
-func TestPrompt_SetDebug(t *testing.T) {
+func TestPromptSetDebug(t *testing.T) {
 	p := prompt{}
 	assert.False(t, p.debug)
 
@@ -132,7 +132,7 @@ func TestPrompt_SetDebug(t *testing.T) {
 	assert.False(t, p.debug)
 }
 
-func TestPrompt_SetHeader(t *testing.T) {
+func TestPromptSetHeader(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.headerGenerator)
 
@@ -141,7 +141,7 @@ func TestPrompt_SetHeader(t *testing.T) {
 	assert.Equal(t, "<title>", p.headerGenerator(100))
 }
 
-func TestPrompt_SetHeaderGenerator(t *testing.T) {
+func TestPromptSetHeaderGenerator(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.headerGenerator)
 
@@ -152,7 +152,7 @@ func TestPrompt_SetHeaderGenerator(t *testing.T) {
 		p.headerGenerator(80))
 }
 
-func TestPrompt_SetHistory(t *testing.T) {
+func TestPromptSetHistory(t *testing.T) {
 	p := prompt{}
 	assert.Len(t, p.history.Commands, 0)
 	assert.Equal(t, 0, p.history.Index)
@@ -162,7 +162,7 @@ func TestPrompt_SetHistory(t *testing.T) {
 	assert.Equal(t, len(testHistoryCommands), p.history.Index)
 }
 
-func TestPrompt_SetHistoryExecPrefix(t *testing.T) {
+func TestPromptSetHistoryExecPrefix(t *testing.T) {
 	p := prompt{}
 	assert.Empty(t, p.historyExecPrefix)
 
@@ -170,7 +170,7 @@ func TestPrompt_SetHistoryExecPrefix(t *testing.T) {
 	assert.Equal(t, "!", p.historyExecPrefix)
 }
 
-func TestPrompt_SetHistoryListPrefix(t *testing.T) {
+func TestPromptSetHistoryListPrefix(t *testing.T) {
 	p := prompt{}
 	assert.Empty(t, p.historyListPrefix)
 
@@ -178,7 +178,7 @@ func TestPrompt_SetHistoryListPrefix(t *testing.T) {
 	assert.Equal(t, "!!", p.historyListPrefix)
 }
 
-func TestPrompt_SetKeyMap(t *testing.T) {
+func TestPromptSetKeyMap(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.keyMapReversed)
 
@@ -187,7 +187,7 @@ func TestPrompt_SetKeyMap(t *testing.T) {
 	assert.NotNil(t, p.keyMapReversed)
 }
 
-func TestPrompt_SetPrefix(t *testing.T) {
+func TestPromptSetPrefix(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.prefixer)
 
@@ -196,7 +196,7 @@ func TestPrompt_SetPrefix(t *testing.T) {
 	assert.Equal(t, "> ", p.prefixer())
 }
 
-func TestPrompt_SetPrefixer(t *testing.T) {
+func TestPromptSetPrefixer(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.prefixer)
 
@@ -205,7 +205,7 @@ func TestPrompt_SetPrefixer(t *testing.T) {
 	assert.Equal(t, "> ", p.prefixer())
 }
 
-func TestPrompt_SetRefreshInterval(t *testing.T) {
+func TestPromptSetRefreshInterval(t *testing.T) {
 	p := prompt{}
 	assert.Equal(t, time.Duration(0), p.refreshInterval)
 
@@ -213,7 +213,7 @@ func TestPrompt_SetRefreshInterval(t *testing.T) {
 	assert.Equal(t, time.Second, p.refreshInterval)
 }
 
-func TestPrompt_SetStyle(t *testing.T) {
+func TestPromptSetStyle(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.style)
 
@@ -224,7 +224,7 @@ func TestPrompt_SetStyle(t *testing.T) {
 	}
 }
 
-func TestPrompt_SetSyntaxHighlighter(t *testing.T) {
+func TestPromptSetSyntaxHighlighter(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.syntaxHighlighter)
 
@@ -240,7 +240,7 @@ func TestPrompt_SetSyntaxHighlighter(t *testing.T) {
 	}
 }
 
-func TestPrompt_SetTerminationChecker(t *testing.T) {
+func TestPromptSetTerminationChecker(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.terminationChecker)
 
@@ -255,7 +255,7 @@ func TestPrompt_SetTerminationChecker(t *testing.T) {
 	assert.True(t, p.terminationChecker("foo;"))
 }
 
-func TestPrompt_SetWidthEnforcer(t *testing.T) {
+func TestPromptSetWidthEnforcer(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.widthEnforcer)
 
@@ -264,7 +264,7 @@ func TestPrompt_SetWidthEnforcer(t *testing.T) {
 	assert.Equal(t, "foo\nbar", p.widthEnforcer("foobar", 3))
 }
 
-func TestPrompt_Style(t *testing.T) {
+func TestPromptStyle(t *testing.T) {
 	p := prompt{}
 	assert.Nil(t, p.Style())
 

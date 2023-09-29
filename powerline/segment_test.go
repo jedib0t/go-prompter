@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSegment_Color(t *testing.T) {
+func TestSegmentColor(t *testing.T) {
 	s := Segment{}
 
 	c := s.Color()
@@ -30,7 +30,7 @@ func TestSegment_Color(t *testing.T) {
 	assert.Equal(t, *s.color, c)
 }
 
-func TestSegment_HasChanges(t *testing.T) {
+func TestSegmentHasChanges(t *testing.T) {
 	s := Segment{}
 	assert.False(t, s.HasChanges())
 
@@ -38,7 +38,7 @@ func TestSegment_HasChanges(t *testing.T) {
 	assert.True(t, s.HasChanges())
 }
 
-func TestSegment_Render(t *testing.T) {
+func TestSegmentRender(t *testing.T) {
 	s := Segment{}
 	assert.Equal(t, "", s.Render())
 
@@ -66,7 +66,7 @@ func TestSegment_Render(t *testing.T) {
 	assert.Equal(t, s.color.Sprint("[🌐 0.0.0.0]"), s.Render())
 }
 
-func TestSegment_ResetColor(t *testing.T) {
+func TestSegmentResetColor(t *testing.T) {
 	s := Segment{}
 	s.SetColor(prompt.Color{
 		Foreground: termenv.ANSI256Color(0),
@@ -78,7 +78,7 @@ func TestSegment_ResetColor(t *testing.T) {
 	assert.Nil(t, s.color)
 }
 
-func TestSegment_SetColor(t *testing.T) {
+func TestSegmentSetColor(t *testing.T) {
 	s := Segment{}
 	s.SetContent("foo")
 	s.hasChanges = false
@@ -108,7 +108,7 @@ func TestSegment_SetColor(t *testing.T) {
 	assert.True(t, s.hasChanges)
 }
 
-func TestSegment_SetContent(t *testing.T) {
+func TestSegmentSetContent(t *testing.T) {
 	s := Segment{}
 
 	s.SetContent("foo", "tag1")
@@ -123,7 +123,7 @@ func TestSegment_SetContent(t *testing.T) {
 	assert.False(t, s.HasChanges())
 }
 
-func TestSegment_SetIcon(t *testing.T) {
+func TestSegmentSetIcon(t *testing.T) {
 	s := Segment{}
 	s.SetContent("foo")
 	s.hasChanges = false
@@ -139,7 +139,7 @@ func TestSegment_SetIcon(t *testing.T) {
 	assert.False(t, s.hasChanges)
 }
 
-func TestSegment_Width(t *testing.T) {
+func TestSegmentWidth(t *testing.T) {
 	s := Segment{}
 	assert.Equal(t, 0, s.Width())
 

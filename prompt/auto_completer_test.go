@@ -19,7 +19,7 @@ func BenchmarkAutoComplete(b *testing.B) {
 	}
 }
 
-func TestSuggestion_String(t *testing.T) {
+func TestSuggestionString(t *testing.T) {
 	s := Suggestion{
 		Value: "val",
 		Hint:  "hint",
