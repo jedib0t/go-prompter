@@ -66,30 +66,28 @@ func AutoCompleteSimple(suggestions []Suggestion, caseInsensitive bool) AutoComp
 
 	// build a map of the first character to the list of words to make look-up
 	// reasonably fast
-	lookupMap, firstRunes := processSuggestionsForLookup(suggestions)
+	lookupMap, allSuggestions := processSuggestionsForLookup(suggestions)
 
 	// return the auto-completer
 	return func(sentence string, word string, location uint) []Suggestion {
-		var matches []Suggestion
 		if word == "" { // recommend everything
-			for _, firstRune := range firstRunes {
-				matches = append(matches, lookupMap[firstRune]...)
-			}
-		} else {
-			if caseInsensitive {
-				word = strings.ToLower(word)
-			}
-			for _, possibleMatch := range lookupMap[word[0:1]] {
-				if strings.HasPrefix(possibleMatch.Value, word) && len(possibleMatch.Value) >= len(word) {
-					matches = append(matches, possibleMatch)
-				}
+			return allSuggestions
+		}
+
+		var matches []Suggestion
+		if caseInsensitive {
+			word = strings.ToLower(word)
+		}
+		for _, possibleMatch := range lookupMap[word[0:1]] {
+			if strings.HasPrefix(possibleMatch.Value, word) && len(possibleMatch.Value) >= len(word) {
+				matches = append(matches, possibleMatch)
 			}
 		}
 		return matches
 	}
 }
 
-func processSuggestionsForLookup(suggestions []Suggestion) (map[string][]Suggestion, []string) {
+func processSuggestionsForLookup(suggestions []Suggestion) (map[string][]Suggestion, []Suggestion) {
 	lookupMap := make(map[string][]Suggestion)
 	possibleMatchesFirstRuneMap := make(map[string]bool)
 	for _, suggestion := range suggestions {
@@ -103,8 +101,12 @@ func processSuggestionsForLookup(suggestions []Suggestion) (map[string][]Suggest
 		firstRunes = append(firstRunes, k)
 	}
 	sort.Strings(firstRunes)
+	var allSuggestions []Suggestion
+	for _, firstRune := range firstRunes {
+		allSuggestions = append(allSuggestions, lookupMap[firstRune]...)
+	}
 
-	return lookupMap, firstRunes
+	return lookupMap, allSuggestions
 }
 
 func suggestionsFromFile(contents string) []Suggestion {
