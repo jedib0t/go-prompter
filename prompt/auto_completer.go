@@ -66,32 +66,20 @@ func AutoCompleteSimple(suggestions []Suggestion, caseInsensitive bool) AutoComp
 
 	// build a map of the first character to the list of words to make look-up
 	// reasonably fast
-	suggestionsMap := make(map[Suggestion]bool)
-	possibleMatchesMap := make(map[string][]Suggestion)
-	possibleMatchesFirstRuneMap := make(map[string]bool)
-	for _, suggestion := range suggestions {
-		firstRune := suggestion.Value[0:1]
-		suggestionsMap[suggestion] = true
-		possibleMatchesMap[firstRune] = append(possibleMatchesMap[firstRune], suggestion)
-		possibleMatchesFirstRuneMap[firstRune] = true
-	}
-	possibleMatchesFirstRunes := make([]string, 0)
-	for k := range possibleMatchesFirstRuneMap {
-		possibleMatchesFirstRunes = append(possibleMatchesFirstRunes, k)
-	}
-	sort.Strings(possibleMatchesFirstRunes)
+	lookupMap, firstRunes := processSuggestionsForLookup(suggestions)
 
+	// return the auto-completer
 	return func(sentence string, word string, location uint) []Suggestion {
 		var matches []Suggestion
 		if word == "" { // recommend everything
-			for _, firstRune := range possibleMatchesFirstRunes {
-				matches = append(matches, possibleMatchesMap[firstRune]...)
+			for _, firstRune := range firstRunes {
+				matches = append(matches, lookupMap[firstRune]...)
 			}
 		} else {
 			if caseInsensitive {
 				word = strings.ToLower(word)
 			}
-			for _, possibleMatch := range possibleMatchesMap[word[0:1]] {
+			for _, possibleMatch := range lookupMap[word[0:1]] {
 				if strings.HasPrefix(possibleMatch.Value, word) && len(possibleMatch.Value) >= len(word) {
 					matches = append(matches, possibleMatch)
 				}
@@ -99,6 +87,24 @@ func AutoCompleteSimple(suggestions []Suggestion, caseInsensitive bool) AutoComp
 		}
 		return matches
 	}
+}
+
+func processSuggestionsForLookup(suggestions []Suggestion) (map[string][]Suggestion, []string) {
+	lookupMap := make(map[string][]Suggestion)
+	possibleMatchesFirstRuneMap := make(map[string]bool)
+	for _, suggestion := range suggestions {
+		firstRune := suggestion.Value[0:1]
+		lookupMap[firstRune] = append(lookupMap[firstRune], suggestion)
+		possibleMatchesFirstRuneMap[firstRune] = true
+	}
+
+	firstRunes := make([]string, 0)
+	for k := range possibleMatchesFirstRuneMap {
+		firstRunes = append(firstRunes, k)
+	}
+	sort.Strings(firstRunes)
+
+	return lookupMap, firstRunes
 }
 
 func suggestionsFromFile(contents string) []Suggestion {

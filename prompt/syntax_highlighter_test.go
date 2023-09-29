@@ -10,7 +10,7 @@ func TestSyntaxHighlighterChroma(t *testing.T) {
 	sh, err := SyntaxHighlighterChroma("foo", "bar", "baz")
 	assert.Nil(t, sh)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), ErrUnsupportedChromaLanguage)
+	assert.Contains(t, err.Error(), ErrUnsupportedChromaLanguage.Error())
 	assert.Contains(t, err.Error(), "\"foo\"")
 
 	sh, err = SyntaxHighlighterChroma("sql", "bar", "baz")
