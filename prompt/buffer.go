@@ -200,6 +200,19 @@ func (b *buffer) DeleteWordForward() {
 	b.linesChanged.MarkChanged(b.cursor.Line)
 }
 
+// Display returns the current contents of the buffer for display and assumes
+// that all returned content has been displayed/rendered.
+func (b *buffer) Display() ([]string, CursorLocation) {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+
+	lines := append([]string{}, b.lines...)
+	cursor := b.cursor
+	b.linesChanged.Clear()
+
+	return lines, cursor
+}
+
 // HasChanges returns true if Render() will return something else on the next
 // call to it.
 func (b *buffer) HasChanges() bool {
@@ -332,19 +345,6 @@ func (b *buffer) MarkAsDone() {
 	defer b.mutex.Unlock()
 
 	b.done = true
-}
-
-// Display returns the current contents of the buffer for display and assumes
-// that all returned content has been displayed/rendered.
-func (b *buffer) Display() ([]string, CursorLocation) {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
-
-	lines := append([]string{}, b.lines...)
-	cursor := b.cursor
-	b.linesChanged.Clear()
-
-	return lines, cursor
 }
 
 // MoveDown attempts to move the cursor to the same position in the next line
@@ -646,9 +646,6 @@ func (b *buffer) getWordAtCursor() (string, int) {
 	if b.cursor.Column == len(line) || (b.cursor.Column < len(line) && line[b.cursor.Column] == ' ') {
 		idxWordStart := -1
 		for idx := b.cursor.Column - 1; idx >= 0; idx-- {
-			if idx >= len(line) {
-				continue
-			}
 			if !b.isPartOfWord(line[idx]) {
 				break
 			}

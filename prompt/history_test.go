@@ -1,6 +1,7 @@
 package prompt
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
@@ -101,4 +102,42 @@ func TestHistory_Render(t *testing.T) {
  2 │ 2023-09-02 14:15:16 │ BAR     
 `
 	assert.Equal(t, expected, h.Render(3, 0))
+}
+
+func TestPrompt_processHistoryCommand(t *testing.T) {
+	p := generateTestPrompt(t, context.Background())
+	p.SetHistory([]HistoryCommand{
+		{Command: "foo"},
+		{Command: "bar"},
+		{Command: "baz"},
+	})
+	p.SetHistoryExecPrefix("!")
+	p.SetHistoryListPrefix("!!")
+
+	hc := p.processHistoryCommand("!")
+	assert.NotNil(t, hc)
+	assert.Equal(t, historyCommandExec, hc.Type)
+	assert.Equal(t, 0, hc.Value)
+
+	hc = p.processHistoryCommand("!10")
+	assert.NotNil(t, hc)
+	assert.Equal(t, historyCommandExec, hc.Type)
+	assert.Equal(t, 10, hc.Value)
+
+	hc = p.processHistoryCommand("!!")
+	assert.NotNil(t, hc)
+	assert.Equal(t, historyCommandList, hc.Type)
+	assert.Equal(t, 0, hc.Value)
+
+	hc = p.processHistoryCommand("!! 10")
+	assert.NotNil(t, hc)
+	assert.Equal(t, historyCommandList, hc.Type)
+	assert.Equal(t, 10, hc.Value)
+
+	p.SetHistoryExecPrefix("!")
+	p.SetHistoryListPrefix("/!")
+	hc = p.processHistoryCommand("!!")
+	assert.NotNil(t, hc)
+	assert.Equal(t, historyCommandExec, hc.Type)
+	assert.Equal(t, 3, hc.Value)
 }

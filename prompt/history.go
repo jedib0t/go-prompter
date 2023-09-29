@@ -46,9 +46,8 @@ func (h *History) Get(n int) string {
 
 // GetNext returns the next command in history.
 func (h *History) GetNext() string {
-	h.Index++
-	if h.Index > len(h.Commands) {
-		h.Index = len(h.Commands)
+	if h.Index < len(h.Commands) {
+		h.Index++
 	}
 	return h.Get(h.Index)
 }

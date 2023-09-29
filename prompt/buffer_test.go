@@ -13,6 +13,14 @@ func getNewBuffer(t *testing.T) *buffer {
 	return b
 }
 
+func TestBuffer_Cursor(t *testing.T) {
+	b := getNewBuffer(t)
+	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.Cursor())
+
+	b.Set("foo\nbar")
+	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, b.Cursor())
+}
+
 func TestBuffer_DeleteBackward(t *testing.T) {
 	b := getNewBuffer(t)
 
@@ -59,6 +67,15 @@ func TestBuffer_DeleteBackward(t *testing.T) {
 	b.DeleteBackward(-1)
 	assert.Equal(t, []string{""}, b.lines)
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
+}
+
+func TestBuffer_DeleteBackwardToBeginningOfLine(t *testing.T) {
+	b := getNewBuffer(t)
+	b.InsertString("foo bar baz")
+	b.MoveWordLeft()
+	b.DeleteBackwardToBeginningOfLine()
+
+	assert.Equal(t, "baz", b.String())
 }
 
 func TestBuffer_DeleteForward(t *testing.T) {
@@ -113,6 +130,16 @@ func TestBuffer_DeleteForward(t *testing.T) {
 	b.DeleteForward(-1)
 	assert.Equal(t, []string{"ab"}, b.lines)
 	assert.Equal(t, CursorLocation{Line: 0, Column: 2}, b.cursor)
+}
+
+func TestBuffer_DeleteForwardToEndOfLine(t *testing.T) {
+	b := getNewBuffer(t)
+	b.InsertString("foo bar baz")
+	b.MoveWordLeft()
+	b.MoveWordLeft()
+	b.DeleteForwardToEndOfLine()
+
+	assert.Equal(t, "foo ", b.String())
 }
 
 func TestBuffer_DeleteWordBackward(t *testing.T) {
@@ -234,6 +261,19 @@ func TestBuffer_DeleteWordForward(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
 }
 
+func TestBuffer_Display(t *testing.T) {
+	b := getNewBuffer(t)
+
+	lines, cur := b.Display()
+	assert.Equal(t, []string{""}, lines)
+	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, cur)
+
+	b.InsertString("foo\nbar")
+	lines, cur = b.Display()
+	assert.Equal(t, []string{"foo", "bar"}, lines)
+	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, cur)
+}
+
 func TestBuffer_HasChanges(t *testing.T) {
 	b := getNewBuffer(t)
 
@@ -320,6 +360,11 @@ func TestBuffer_Insert(t *testing.T) {
 	b.Insert('?')
 	assert.Equal(t, []string{"?abc", "  ", "1  2", "", "def"}, b.lines)
 	assert.Equal(t, CursorLocation{Line: 0, Column: 1}, b.cursor)
+
+	b.SetTab("    ")
+	b.Insert('\t')
+	assert.Equal(t, []string{"?    abc", "  ", "1  2", "", "def"}, b.lines)
+	assert.Equal(t, CursorLocation{Line: 0, Column: 5}, b.cursor)
 }
 
 func TestBuffer_IsDone(t *testing.T) {
@@ -344,8 +389,21 @@ func TestBuffer_Length(t *testing.T) {
 	assert.Equal(t, 7, b.Length())
 }
 
+func TestBuffer_Lines(t *testing.T) {
+	b := getNewBuffer(t)
+	assert.Equal(t, []string{""}, b.Lines())
+
+	b.InsertString("foo\n")
+	assert.Equal(t, []string{"foo", ""}, b.Lines())
+
+	b.InsertString("bar\n")
+	assert.Equal(t, []string{"foo", "bar", ""}, b.Lines())
+}
+
 func TestBuffer_MakeWordCapitalCase(t *testing.T) {
 	b := getNewBuffer(t)
+	b.MakeWordCapitalCase()
+
 	b.lines = []string{"abc", "def", "ghi"}
 	b.cursor = CursorLocation{Line: 0, Column: 0}
 
@@ -364,6 +422,7 @@ func TestBuffer_MakeWordCapitalCase(t *testing.T) {
 
 func TestBuffer_MakeWordLowerCase(t *testing.T) {
 	b := getNewBuffer(t)
+	b.MakeWordLowerCase()
 	b.lines = []string{"ABC", "DEF", "GHI"}
 	b.cursor = CursorLocation{Line: 0, Column: 0}
 
@@ -382,6 +441,7 @@ func TestBuffer_MakeWordLowerCase(t *testing.T) {
 
 func TestBuffer_MakeWordUpperCase(t *testing.T) {
 	b := getNewBuffer(t)
+	b.MakeWordUpperCase()
 	b.lines = []string{"abc", "def", "ghi"}
 	b.cursor = CursorLocation{Line: 0, Column: 0}
 
@@ -479,52 +539,6 @@ func TestBuffer_MoveLeft(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
 }
 
-func TestBuffer_MoveLineBegin(t *testing.T) {
-	b := getNewBuffer(t)
-
-	b.cursor = CursorLocation{Line: 0, Column: 0}
-	b.MoveToBeginningOfLine()
-	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
-
-	b.lines = []string{"abc", "def"}
-	b.cursor = CursorLocation{Line: 1, Column: 3}
-	b.MoveToBeginningOfLine()
-	assert.Equal(t, CursorLocation{Line: 1, Column: 0}, b.cursor)
-
-	b.cursor = CursorLocation{Line: 1, Column: 2}
-	b.MoveToBeginningOfLine()
-	assert.Equal(t, CursorLocation{Line: 1, Column: 0}, b.cursor)
-
-	b.cursor = CursorLocation{Line: 0, Column: 3}
-	b.MoveToBeginningOfLine()
-	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
-}
-
-func TestBuffer_MoveLineEnd(t *testing.T) {
-	b := getNewBuffer(t)
-
-	b.cursor = CursorLocation{Line: 0, Column: 0}
-	b.MoveToEndOfLine()
-	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
-
-	b.lines = []string{"abc", "def"}
-	b.cursor = CursorLocation{Line: 1, Column: 3}
-	b.MoveToEndOfLine()
-	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, b.cursor)
-
-	b.cursor = CursorLocation{Line: 1, Column: 2}
-	b.MoveToEndOfLine()
-	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, b.cursor)
-
-	b.cursor = CursorLocation{Line: 0, Column: 3}
-	b.MoveToEndOfLine()
-	assert.Equal(t, CursorLocation{Line: 0, Column: 3}, b.cursor)
-
-	b.cursor = CursorLocation{Line: 0, Column: 2}
-	b.MoveToEndOfLine()
-	assert.Equal(t, CursorLocation{Line: 0, Column: 3}, b.cursor)
-}
-
 func TestBuffer_MoveRight(t *testing.T) {
 	b := getNewBuffer(t)
 
@@ -575,6 +589,68 @@ func TestBuffer_MoveRight(t *testing.T) {
 	b.MoveRight(1)
 	assert.Equal(t, []string{"abc", "def"}, b.lines)
 	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, b.cursor)
+}
+
+func TestBuffer_MoveToBeginning(t *testing.T) {
+	b := getNewBuffer(t)
+
+	b.InsertString("foo")
+	b.MoveToBeginning()
+	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.Cursor())
+}
+
+func TestBuffer_MoveToBeginningOfLine(t *testing.T) {
+	b := getNewBuffer(t)
+
+	b.cursor = CursorLocation{Line: 0, Column: 0}
+	b.MoveToBeginningOfLine()
+	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
+
+	b.lines = []string{"abc", "def"}
+	b.cursor = CursorLocation{Line: 1, Column: 3}
+	b.MoveToBeginningOfLine()
+	assert.Equal(t, CursorLocation{Line: 1, Column: 0}, b.cursor)
+
+	b.cursor = CursorLocation{Line: 1, Column: 2}
+	b.MoveToBeginningOfLine()
+	assert.Equal(t, CursorLocation{Line: 1, Column: 0}, b.cursor)
+
+	b.cursor = CursorLocation{Line: 0, Column: 3}
+	b.MoveToBeginningOfLine()
+	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
+}
+
+func TestBuffer_MoveToEnd(t *testing.T) {
+	b := getNewBuffer(t)
+
+	b.InsertString("foo")
+	b.MoveToEnd()
+	assert.Equal(t, CursorLocation{Line: 0, Column: 3}, b.Cursor())
+}
+
+func TestBuffer_MoveToEndOfLine(t *testing.T) {
+	b := getNewBuffer(t)
+
+	b.cursor = CursorLocation{Line: 0, Column: 0}
+	b.MoveToEndOfLine()
+	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
+
+	b.lines = []string{"abc", "def"}
+	b.cursor = CursorLocation{Line: 1, Column: 3}
+	b.MoveToEndOfLine()
+	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, b.cursor)
+
+	b.cursor = CursorLocation{Line: 1, Column: 2}
+	b.MoveToEndOfLine()
+	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, b.cursor)
+
+	b.cursor = CursorLocation{Line: 0, Column: 3}
+	b.MoveToEndOfLine()
+	assert.Equal(t, CursorLocation{Line: 0, Column: 3}, b.cursor)
+
+	b.cursor = CursorLocation{Line: 0, Column: 2}
+	b.MoveToEndOfLine()
+	assert.Equal(t, CursorLocation{Line: 0, Column: 3}, b.cursor)
 }
 
 func TestBuffer_MoveUp(t *testing.T) {
@@ -672,6 +748,24 @@ func TestBuffer_MoveWordRight(t *testing.T) {
 	assert.Equal(t, CursorLocation{Line: 1, Column: 0}, b.cursor)
 }
 
+func TestBuffer_NumLines(t *testing.T) {
+	b := getNewBuffer(t)
+	assert.Equal(t, 1, b.NumLines())
+
+	b.InsertString("foo\nbar")
+	assert.Equal(t, 2, b.NumLines())
+}
+
+func TestBuffer_Reset(t *testing.T) {
+	b := getNewBuffer(t)
+	b.InsertString("foo")
+
+	b.Reset()
+	assert.Len(t, b.lines, 1)
+	assert.Empty(t, b.lines[0])
+	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, b.cursor)
+}
+
 func TestBuffer_Set(t *testing.T) {
 	b := getNewBuffer(t)
 	b.tab = "    "
@@ -693,4 +787,49 @@ func TestBuffer_String(t *testing.T) {
 
 	b.lines = []string{"abc", "def"}
 	assert.Equal(t, "abc\ndef", b.String())
+}
+
+func TestBuffer_getWordAtCursor(t *testing.T) {
+	b := getNewBuffer(t)
+	b.InsertString("foo bar baz")
+
+	word, idx := b.getWordAtCursor()
+	assert.Equal(t, "baz", word)
+	assert.Equal(t, 8, idx)
+
+	b.cursor.Column = 7
+	word, idx = b.getWordAtCursor()
+	assert.Equal(t, "bar", word)
+	assert.Equal(t, 4, idx)
+
+	b.cursor.Column = 3
+	word, idx = b.getWordAtCursor()
+	assert.Equal(t, "foo", word)
+	assert.Equal(t, 0, idx)
+
+	b.cursor.Column = 2
+	word, idx = b.getWordAtCursor()
+	assert.Equal(t, "", word)
+	assert.Equal(t, -1, idx)
+}
+
+func TestLinesChangedMap(t *testing.T) {
+	lcm := make(linesChangedMap)
+	assert.Empty(t, lcm)
+	assert.True(t, lcm.NothingChanged())
+
+	lcm.MarkChanged(1)
+	assert.False(t, lcm.AllChanged())
+	assert.True(t, lcm.AnythingChanged())
+	assert.False(t, lcm.IsChanged(0))
+	assert.True(t, lcm.IsChanged(1))
+	assert.False(t, lcm.IsChanged(2))
+	assert.False(t, lcm.NothingChanged())
+
+	lcm.MarkAllChanged()
+	assert.True(t, lcm.AllChanged())
+	assert.True(t, lcm.IsChanged(2))
+	assert.False(t, lcm.NothingChanged())
+
+	assert.Equal(t, "[-1 1]", lcm.String())
 }
