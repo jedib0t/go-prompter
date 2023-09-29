@@ -134,7 +134,7 @@ func TestBuffer_DeleteForward(t *testing.T) {
 
 func TestBuffer_DeleteForwardToEndOfLine(t *testing.T) {
 	b := getNewBuffer(t)
-	b.InsertString("foo bar baz")
+	b.InsertString("foo baz bar")
 	b.MoveWordLeft()
 	b.MoveWordLeft()
 	b.DeleteForwardToEndOfLine()
@@ -268,9 +268,9 @@ func TestBuffer_Display(t *testing.T) {
 	assert.Equal(t, []string{""}, lines)
 	assert.Equal(t, CursorLocation{Line: 0, Column: 0}, cur)
 
-	b.InsertString("foo\nbar")
+	b.InsertString("bar\nbaz")
 	lines, cur = b.Display()
-	assert.Equal(t, []string{"foo", "bar"}, lines)
+	assert.Equal(t, []string{"bar", "baz"}, lines)
 	assert.Equal(t, CursorLocation{Line: 1, Column: 3}, cur)
 }
 
@@ -752,7 +752,7 @@ func TestBuffer_NumLines(t *testing.T) {
 	b := getNewBuffer(t)
 	assert.Equal(t, 1, b.NumLines())
 
-	b.InsertString("foo\nbar")
+	b.InsertString("food\nbard")
 	assert.Equal(t, 2, b.NumLines())
 }
 
@@ -791,8 +791,9 @@ func TestBuffer_String(t *testing.T) {
 
 func TestBuffer_getWordAtCursor(t *testing.T) {
 	b := getNewBuffer(t)
-	b.InsertString("foo bar baz")
+	b.InsertString("foo bar baz foo")
 
+	b.cursor.Column = 11
 	word, idx := b.getWordAtCursor()
 	assert.Equal(t, "baz", word)
 	assert.Equal(t, 8, idx)
