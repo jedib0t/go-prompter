@@ -66,14 +66,14 @@ func (b *buffer) DeleteBackward(n int, locked ...bool) {
 				}
 
 				b.lines = lines
-				b.linesChanged.MarkAllChanged()
+				b.linesChanged.MarkAll()
 				b.cursor.Line--
 				b.cursor.Column = len(prevLine)
 			}
 		} else {
 			line := b.getCurrentLine()
 			b.lines[b.cursor.Line] = line[:b.cursor.Column-1] + line[b.cursor.Column:]
-			b.linesChanged.MarkChanged(b.cursor.Line)
+			b.linesChanged.Mark(b.cursor.Line)
 			b.cursor.Column--
 		}
 	}
@@ -118,13 +118,13 @@ func (b *buffer) DeleteForward(n int, locked ...bool) {
 			}
 
 			b.lines = lines
-			b.linesChanged.MarkAllChanged()
+			b.linesChanged.MarkAll()
 		} else if b.cursor.Column > 0 {
 			b.lines[b.cursor.Line] = line[:b.cursor.Column] + line[b.cursor.Column+1:]
-			b.linesChanged.MarkChanged(b.cursor.Line)
+			b.linesChanged.Mark(b.cursor.Line)
 		} else {
 			b.lines[b.cursor.Line] = line[b.cursor.Column+1:]
-			b.linesChanged.MarkChanged(b.cursor.Line)
+			b.linesChanged.Mark(b.cursor.Line)
 		}
 	}
 }
@@ -165,7 +165,7 @@ func (b *buffer) DeleteWordBackward() {
 		}
 	}
 	b.lines[b.cursor.Line] = line[b.cursor.Column:]
-	b.linesChanged.MarkChanged(b.cursor.Line)
+	b.linesChanged.Mark(b.cursor.Line)
 	b.cursor.Column = 0
 }
 
@@ -197,7 +197,7 @@ func (b *buffer) DeleteWordForward() {
 		}
 	}
 	b.lines[b.cursor.Line] = line[:b.cursor.Column]
-	b.linesChanged.MarkChanged(b.cursor.Line)
+	b.linesChanged.Mark(b.cursor.Line)
 }
 
 // Display returns the current contents of the buffer for display and assumes
@@ -243,7 +243,7 @@ func (b *buffer) Insert(r rune, locked ...bool) {
 		lines = append(lines, b.lines[b.cursor.Line+1:]...)
 
 		b.lines = lines
-		b.linesChanged.MarkAllChanged()
+		b.linesChanged.MarkAll()
 		b.cursor.Line++
 		b.cursor.Column = 0
 	} else {
@@ -256,7 +256,7 @@ func (b *buffer) Insert(r rune, locked ...bool) {
 		line = line[:b.cursor.Column] + rStr + line[b.cursor.Column:]
 
 		b.lines[b.cursor.Line] = line
-		b.linesChanged.MarkChanged(b.cursor.Line)
+		b.linesChanged.Mark(b.cursor.Line)
 		b.cursor.Column += len(rStr)
 	}
 }
@@ -303,7 +303,7 @@ func (b *buffer) MakeWordCapitalCase() {
 
 	word = strings.ToUpper(word[0:1]) + word[1:]
 	b.lines[b.cursor.Line] = line[:idxWordStart] + word + line[idxWordEnd:]
-	b.linesChanged.MarkChanged(b.cursor.Line)
+	b.linesChanged.Mark(b.cursor.Line)
 	b.MoveWordRight(true)
 }
 
@@ -319,7 +319,7 @@ func (b *buffer) MakeWordLowerCase() {
 	}
 
 	b.lines[b.cursor.Line] = line[:idxWordStart] + strings.ToLower(word) + line[idxWordEnd:]
-	b.linesChanged.MarkChanged(b.cursor.Line)
+	b.linesChanged.Mark(b.cursor.Line)
 	b.MoveWordRight(true)
 }
 
@@ -335,7 +335,7 @@ func (b *buffer) MakeWordUpperCase() {
 	}
 
 	b.lines[b.cursor.Line] = line[:idxWordStart] + strings.ToUpper(word) + line[idxWordEnd:]
-	b.linesChanged.MarkChanged(b.cursor.Line)
+	b.linesChanged.Mark(b.cursor.Line)
 	b.MoveWordRight(true)
 }
 
@@ -352,12 +352,12 @@ func (b *buffer) MoveDown(n int) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
-	b.linesChanged.MarkChanged(b.cursor.Line)
+	b.linesChanged.Mark(b.cursor.Line)
 	b.cursor.Line += n
 	if b.cursor.Line >= len(b.lines) {
 		b.cursor.Line = len(b.lines) - 1
 	}
-	b.linesChanged.MarkChanged(b.cursor.Line)
+	b.linesChanged.Mark(b.cursor.Line)
 	line := b.getCurrentLine()
 	if b.cursor.Column > len(line) {
 		b.cursor.Column = len(line)
@@ -371,7 +371,7 @@ func (b *buffer) MoveLeft(n int) {
 
 	// move to the very beginning
 	if n == -1 {
-		b.linesChanged.MarkAllChanged()
+		b.linesChanged.MarkAll()
 		b.cursor = CursorLocation{Line: 0, Column: 0}
 		return
 	}
@@ -379,14 +379,14 @@ func (b *buffer) MoveLeft(n int) {
 	// move left until n becomes 0, or beginning of buffer is reached
 	for ; n > 0; n-- {
 		b.cursor.Column--
-		b.linesChanged.MarkChanged(b.cursor.Line)
+		b.linesChanged.Mark(b.cursor.Line)
 		if b.cursor.Column < 0 {
 			if b.cursor.Line == 0 {
 				b.cursor.Column = 0
 				break
 			}
 			b.cursor.Line--
-			b.linesChanged.MarkChanged(b.cursor.Line)
+			b.linesChanged.Mark(b.cursor.Line)
 			b.cursor.Column = len(b.getCurrentLine())
 		}
 	}
@@ -408,14 +408,14 @@ func (b *buffer) MoveRight(n int) {
 	for ; n > 0; n-- {
 		line := b.getCurrentLine()
 		b.cursor.Column++
-		b.linesChanged.MarkChanged(b.cursor.Line)
+		b.linesChanged.Mark(b.cursor.Line)
 		if b.cursor.Column > len(line) {
 			if b.cursor.Line == len(b.lines)-1 {
 				b.cursor.Column = len(line)
 				break
 			}
 			b.cursor.Line++
-			b.linesChanged.MarkChanged(b.cursor.Line)
+			b.linesChanged.Mark(b.cursor.Line)
 			b.cursor.Column = 0
 		}
 	}
@@ -426,9 +426,9 @@ func (b *buffer) MoveToBeginning() {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
-	b.linesChanged.MarkChanged(b.cursor.Line) // before
+	b.linesChanged.Mark(b.cursor.Line) // before
 	b.cursor.Line = 0
-	b.linesChanged.MarkChanged(b.cursor.Line) // after
+	b.linesChanged.Mark(b.cursor.Line) // after
 	b.cursor.Column = 0
 }
 
@@ -438,7 +438,7 @@ func (b *buffer) MoveToBeginningOfLine() {
 	defer b.mutex.Unlock()
 
 	b.cursor.Column = 0
-	b.linesChanged.MarkChanged(b.cursor.Line) // before
+	b.linesChanged.Mark(b.cursor.Line) // before
 }
 
 // MoveToEnd moves the cursor right to the end of the last line
@@ -446,9 +446,9 @@ func (b *buffer) MoveToEnd() {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
-	b.linesChanged.MarkChanged(b.cursor.Line) // before
+	b.linesChanged.Mark(b.cursor.Line) // before
 	b.cursor.Line = len(b.lines) - 1
-	b.linesChanged.MarkChanged(b.cursor.Line) // after
+	b.linesChanged.Mark(b.cursor.Line) // after
 	b.cursor.Column = len(b.getCurrentLine())
 }
 
@@ -458,16 +458,16 @@ func (b *buffer) MoveToEndOfLine() {
 	defer b.mutex.Unlock()
 
 	b.cursor.Column = len(b.getCurrentLine())
-	b.linesChanged.MarkChanged(b.cursor.Line) // before
+	b.linesChanged.Mark(b.cursor.Line) // before
 }
 
 // MoveUp attempts to move the cursor to the same position in the previous line
 func (b *buffer) MoveUp(n int) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
-	b.linesChanged.MarkChanged(b.cursor.Line) // before
+	b.linesChanged.Mark(b.cursor.Line) // before
 	defer func() {
-		b.linesChanged.MarkChanged(b.cursor.Line) // after
+		b.linesChanged.Mark(b.cursor.Line) // after
 	}()
 
 	b.cursor.Line -= n
@@ -492,9 +492,9 @@ func (b *buffer) MoveWordLeft(locked ...bool) {
 		if b.cursor.Line == 0 {
 			return
 		}
-		b.linesChanged.MarkChanged(b.cursor.Line) // before
+		b.linesChanged.Mark(b.cursor.Line) // before
 		b.cursor.Line--
-		b.linesChanged.MarkChanged(b.cursor.Line) // after
+		b.linesChanged.Mark(b.cursor.Line) // after
 		b.cursor.Column = len(b.getCurrentLine())
 	}
 
@@ -503,7 +503,7 @@ func (b *buffer) MoveWordLeft(locked ...bool) {
 	idxStartingLine := b.cursor.Line
 	for lineIdx := b.cursor.Line; lineIdx >= 0; lineIdx-- {
 		b.cursor.Line = lineIdx
-		b.linesChanged.MarkChanged(b.cursor.Line)
+		b.linesChanged.Mark(b.cursor.Line)
 		if lineIdx != idxStartingLine {
 			b.cursor.Column = len(b.getCurrentLine())
 		}
@@ -541,9 +541,9 @@ func (b *buffer) MoveWordRight(locked ...bool) {
 		if b.cursor.Line == len(b.lines)-1 {
 			return
 		}
-		b.linesChanged.MarkChanged(b.cursor.Line) // before
+		b.linesChanged.Mark(b.cursor.Line) // before
 		b.cursor.Line++
-		b.linesChanged.MarkChanged(b.cursor.Line) // after
+		b.linesChanged.Mark(b.cursor.Line) // after
 		b.cursor.Column = 0
 		foundBreak = true
 	}
@@ -551,7 +551,7 @@ func (b *buffer) MoveWordRight(locked ...bool) {
 	// go line by line until next word is found
 	for lineIdx := b.cursor.Line; lineIdx < len(b.lines); lineIdx++ {
 		b.cursor.Line = lineIdx
-		b.linesChanged.MarkChanged(b.cursor.Line)
+		b.linesChanged.Mark(b.cursor.Line)
 		if lineIdx != idxStartingLine {
 			b.cursor.Column = 0
 		}
@@ -590,7 +590,7 @@ func (b *buffer) Set(str string) {
 
 	b.done = false
 	b.lines = strings.Split(str, "\n")
-	b.linesChanged.MarkAllChanged()
+	b.linesChanged.MarkAll()
 	b.linesRendered = time.Now().Format(time.RFC3339Nano)
 	b.cursor = CursorLocation{
 		Line:   len(b.lines) - 1,
@@ -699,11 +699,11 @@ func (lc linesChangedMap) IsChanged(line int) bool {
 	return lc[-1] || lc[line]
 }
 
-func (lc linesChangedMap) MarkAllChanged() {
+func (lc linesChangedMap) MarkAll() {
 	lc[-1] = true
 }
 
-func (lc linesChangedMap) MarkChanged(line int) {
+func (lc linesChangedMap) Mark(line int) {
 	lc[line] = true
 }
 

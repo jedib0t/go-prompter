@@ -819,7 +819,7 @@ func TestLinesChangedMap(t *testing.T) {
 	assert.Empty(t, lcm)
 	assert.True(t, lcm.NothingChanged())
 
-	lcm.MarkChanged(1)
+	lcm.Mark(1)
 	assert.False(t, lcm.AllChanged())
 	assert.True(t, lcm.AnythingChanged())
 	assert.False(t, lcm.IsChanged(0))
@@ -827,7 +827,7 @@ func TestLinesChangedMap(t *testing.T) {
 	assert.False(t, lcm.IsChanged(2))
 	assert.False(t, lcm.NothingChanged())
 
-	lcm.MarkAllChanged()
+	lcm.MarkAll()
 	assert.True(t, lcm.AllChanged())
 	assert.True(t, lcm.IsChanged(2))
 	assert.False(t, lcm.NothingChanged())
