@@ -18,7 +18,8 @@ type Style struct {
 	TabString    string            `json:"tab_string"`
 }
 
-func (s Style) validate() error {
+// Validate ensures that the Style can be used without issues.
+func (s Style) Validate() error {
 	if err := s.Dimensions.validate(); err != nil {
 		return err
 	}

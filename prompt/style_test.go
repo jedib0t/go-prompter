@@ -8,15 +8,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStylevalidate(t *testing.T) {
+func TestStyleValidate(t *testing.T) {
 	s := StyleDefault
-	err := s.validate()
+	err := s.Validate()
 	assert.Nil(t, err)
 
 	s = StyleDefault
 	s.Dimensions.HeightMin = 5
 	s.Dimensions.HeightMax = 4
-	err = s.validate()
+	err = s.Validate()
 	assert.NotNil(t, err)
 	assert.True(t, errors.Is(err, ErrInvalidDimensions))
 	assert.Contains(t, err.Error(), "height-min [5] cannot be greater than height-max [4]")
@@ -24,7 +24,7 @@ func TestStylevalidate(t *testing.T) {
 	s = StyleDefault
 	s.Dimensions.WidthMin = 50
 	s.Dimensions.WidthMax = 40
-	err = s.validate()
+	err = s.Validate()
 	assert.NotNil(t, err)
 	assert.True(t, errors.Is(err, ErrInvalidDimensions))
 	assert.Contains(t, err.Error(), "width-min [50] cannot be greater than width-max [40]")

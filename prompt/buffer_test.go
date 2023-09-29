@@ -789,7 +789,7 @@ func TestBufferString(t *testing.T) {
 	assert.Equal(t, "abc\ndef", b.String())
 }
 
-func TestBuffergetWordAtCursor(t *testing.T) {
+func TestBufferGetWordAtCursor(t *testing.T) {
 	b := getNewBuffer(t)
 	b.InsertString("foo bar baz foo")
 

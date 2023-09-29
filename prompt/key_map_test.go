@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestKeyMapreverse(t *testing.T) {
+func TestKeyMapReverse(t *testing.T) {
 	k := KeyMapDefault
 	kr, err := k.reverse()
 	assert.NotNil(t, kr)

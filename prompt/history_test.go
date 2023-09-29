@@ -104,7 +104,7 @@ func TestHistoryRender(t *testing.T) {
 	assert.Equal(t, expected, h.Render(3, 0))
 }
 
-func TestPromptprocessHistoryCommand(t *testing.T) {
+func TestPromptProcessHistoryCommand(t *testing.T) {
 	p := generateTestPrompt(t, context.Background())
 	p.SetHistory([]HistoryCommand{
 		{Command: "foo"},
