@@ -126,4 +126,36 @@ func TestPrompt_renderView(t *testing.T) {
 	assert.Contains(t, "foo=bar", actualLines[4], testSubtitle)
 	assert.Contains(t, "reason=test-debug", actualLines[4], testSubtitle)
 	assert.Contains(t, "time=", actualLines[4], testSubtitle)
+
+	testSubtitle = "Render the diff with debug mode"
+	output.Reset()
+	p.setDebugData("bar", "baz")
+	p.updateModel(true)
+	p.renderView(termenv.NewOutput(&output), "test-debug")
+	actualLines = strings.Split(output.String(), "\n")
+	assert.Len(t, actualLines, 2, testSubtitle)
+	assert.Contains(t, "foo=bar", actualLines[1], testSubtitle)
+	assert.Contains(t, "bar=baz", actualLines[1], testSubtitle)
+	assert.Contains(t, "reason=test-debug", actualLines[1], testSubtitle)
+	assert.Contains(t, "time=", actualLines[1], testSubtitle)
+
+	testSubtitle = "Paused"
+	output.Reset()
+	p.pauseRender()
+	p.setDebugData("baz", "foo")
+	p.updateModel(true)
+	p.renderView(termenv.NewOutput(&output), "test-debug")
+	assert.Equal(t, "", output.String(), testSubtitle)
+
+	testSubtitle = "Resumed"
+	output.Reset()
+	p.resumeRender()
+	p.updateModel(true)
+	p.renderView(termenv.NewOutput(&output), "test-debug")
+	assert.Len(t, actualLines, 2, testSubtitle)
+	assert.Contains(t, "foo=bar", actualLines[1], testSubtitle)
+	assert.Contains(t, "bar=baz", actualLines[1], testSubtitle)
+	assert.Contains(t, "baz=foo", actualLines[1], testSubtitle)
+	assert.Contains(t, "reason=test-debug", actualLines[1], testSubtitle)
+	assert.Contains(t, "time=", actualLines[1], testSubtitle)
 }

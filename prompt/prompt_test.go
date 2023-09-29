@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -99,6 +100,60 @@ func TestPrompt_Prompt(t *testing.T) {
 		assert.True(t, errors.Is(err, ErrInvalidDimensions))
 	})
 
+	t.Run("input reader error", func(t *testing.T) {
+		chErrors := make(chan error, 1)
+		chKeyEvents := make(chan tea.KeyMsg, 1)
+		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
+
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReader := mock_input.NewMockReader(mc)
+		mockReader.EXPECT().Begin(gomock.Any())
+		mockReader.EXPECT().Reset()
+		mockReader.EXPECT().Errors().AnyTimes().Return(chErrors)
+		mockReader.EXPECT().KeyEvents().AnyTimes().Return(chKeyEvents)
+		mockReader.EXPECT().WindowSizeEvents().AnyTimes().Return(chWindowSizeEvents)
+		mockReader.EXPECT().End()
+
+		p := generateTestPrompt(t, ctx)
+		p.reader = mockReader
+		go func() {
+			<-time.After(time.Second / 10) // some time for all goroutines to start
+			chErrors <- fmt.Errorf("test-error")
+		}()
+		userInput, err := p.Prompt(ctx)
+		assert.Empty(t, userInput)
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "test-error")
+	})
+
+	t.Run("input error", func(t *testing.T) {
+		chErrors := make(chan error, 1)
+		chKeyEvents := make(chan tea.KeyMsg, 1)
+		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
+
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReader := mock_input.NewMockReader(mc)
+		mockReader.EXPECT().Begin(gomock.Any())
+		mockReader.EXPECT().Reset()
+		mockReader.EXPECT().Errors().AnyTimes().Return(chErrors)
+		mockReader.EXPECT().KeyEvents().AnyTimes().Return(chKeyEvents)
+		mockReader.EXPECT().WindowSizeEvents().AnyTimes().Return(chWindowSizeEvents)
+		mockReader.EXPECT().End()
+
+		p := generateTestPrompt(t, ctx)
+		p.reader = mockReader
+		go func() {
+			<-time.After(time.Second / 10) // some time for all goroutines to start
+			chKeyEvents <- tea.KeyMsg{Type: tea.KeyCtrlC}
+		}()
+		userInput, err := p.Prompt(ctx)
+		assert.Empty(t, userInput)
+		assert.NotNil(t, err)
+		assert.True(t, errors.Is(err, ErrAborted))
+	})
+
 	t.Run("no error", func(t *testing.T) {
 		chErrors := make(chan error, 1)
 		chKeyEvents := make(chan tea.KeyMsg, 1)
@@ -117,13 +172,25 @@ func TestPrompt_Prompt(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.reader = mockReader
 		go func() {
-			time.Sleep(time.Second / 10) // some time for all goroutines to start
-			chKeyEvents <- tea.KeyMsg{Type: tea.KeyTab}
+			<-time.After(time.Second / 10) // some time for all goroutines to start
+			chKeyEvents <- tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("abc\tdef")}
+			<-time.After(time.Second / 4) // for some rendering
+			chWindowSizeEvents <- tea.WindowSizeMsg{Width: int(p.style.Dimensions.WidthMax + 20)}
+			<-time.After(time.Second / 4) // for some rendering
 			chKeyEvents <- tea.KeyMsg{Type: tea.KeyEnter}
 		}()
 		userInput, err := p.Prompt(ctx)
-		assert.Equal(t, p.style.TabString, userInput)
+		assert.Equal(t, "abc    def", userInput)
 		assert.Nil(t, err)
+		assert.Equal(t, int(p.style.Dimensions.WidthMax), p.displayWidth)
+
+		out, ok := p.output.(*strings.Builder)
+		if ok {
+			outString := out.String()
+			t.Log(outString)
+			assert.Contains(t, outString, "TestPrompt_Prompt/no_error")
+			assert.Contains(t, outString, "abc    def")
+		}
 	})
 }
 
