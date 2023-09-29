@@ -61,7 +61,7 @@ func main() {
 		os.Exit(1)
 	}
 	p.SetAutoCompleter(prompt.AutoCompleteSQLKeywords())
-	p.SetAutoCompleterContextual(prompt.AutoCompleteSimple(tableAndColumnNames, 2, true))
+	p.SetAutoCompleterContextual(prompt.AutoCompleteSimple(tableAndColumnNames, true))
 	p.SetCommandShortcuts(shortcuts)
 	p.SetDebug(*flagDebug)
 	if !*flagDemo {

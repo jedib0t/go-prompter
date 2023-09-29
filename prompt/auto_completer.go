@@ -15,7 +15,7 @@ type Suggestion struct {
 
 // String appeases the stringer interface.
 func (s Suggestion) String() string {
-	return fmt.Sprintf("%#v", s)
+	return fmt.Sprintf("%s: %s", s.Value, s.Hint)
 }
 
 // AutoCompleter defines a function that takes the entire user input, the word
@@ -30,7 +30,7 @@ var suggestionsFileGoLang string
 // AutoCompleteGoLangKeywords is a simple auto-completer that helps
 // auto-complete most of the known GoLang suggestions.
 func AutoCompleteGoLangKeywords() AutoCompleter {
-	return AutoCompleteSimple(suggestionsFromFile(suggestionsFileGoLang), 2, false)
+	return AutoCompleteSimple(suggestionsFromFile(suggestionsFileGoLang), false)
 }
 
 //go:embed suggestions/python.txt
@@ -39,7 +39,7 @@ var suggestionsFilePython string
 // AutoCompletePythonKeywords is a simple auto-completer that helps
 // auto-complete most of the known Python suggestions.
 func AutoCompletePythonKeywords() AutoCompleter {
-	return AutoCompleteSimple(suggestionsFromFile(suggestionsFilePython), 2, false)
+	return AutoCompleteSimple(suggestionsFromFile(suggestionsFilePython), false)
 }
 
 //go:embed suggestions/sql.txt
@@ -48,12 +48,12 @@ var suggestionsFileSQL string
 // AutoCompleteSQLKeywords is a simple auto-completer that helps
 // auto-complete most of the known SQL suggestions.
 func AutoCompleteSQLKeywords() AutoCompleter {
-	return AutoCompleteSimple(suggestionsFromFile(suggestionsFileSQL), 2, true)
+	return AutoCompleteSimple(suggestionsFromFile(suggestionsFileSQL), true)
 }
 
 // AutoCompleteSimple returns an AutoCompleter which will use the given list of
 // suggestions in an optimized fashion for look-ups.
-func AutoCompleteSimple(suggestions []Suggestion, minChars int, caseInsensitive bool) AutoCompleter {
+func AutoCompleteSimple(suggestions []Suggestion, caseInsensitive bool) AutoCompleter {
 	// sort ahead and avoid sorting while searching in the loop below
 	if caseInsensitive {
 		for idx := range suggestions {
@@ -66,43 +66,61 @@ func AutoCompleteSimple(suggestions []Suggestion, minChars int, caseInsensitive 
 
 	// build a map of the first character to the list of words to make look-up
 	// reasonably fast
-	suggestionsMap := make(map[Suggestion]bool)
-	possibleMatchesMap := make(map[string][]Suggestion)
-	for _, suggestion := range suggestions {
-		firstRune := suggestion.Value[0:1]
-		suggestionsMap[suggestion] = true
-		possibleMatchesMap[firstRune] = append(possibleMatchesMap[firstRune], suggestion)
-	}
+	lookupMap, allSuggestions := processSuggestionsForLookup(suggestions)
 
+	// return the auto-completer
 	return func(sentence string, word string, location uint) []Suggestion {
+		if word == "" { // recommend everything
+			return allSuggestions
+		}
+
 		var matches []Suggestion
-		if len(word) >= minChars {
-			if caseInsensitive {
-				word = strings.ToLower(word)
-			}
-			for _, possibleMatch := range possibleMatchesMap[word[0:1]] {
-				if strings.HasPrefix(possibleMatch.Value, word) && len(possibleMatch.Value) > len(word) {
-					matches = append(matches, possibleMatch)
-				}
+		if caseInsensitive {
+			word = strings.ToLower(word)
+		}
+		for _, possibleMatch := range lookupMap[word[0:1]] {
+			if strings.HasPrefix(possibleMatch.Value, word) && len(possibleMatch.Value) >= len(word) {
+				matches = append(matches, possibleMatch)
 			}
 		}
 		return matches
 	}
 }
 
+func processSuggestionsForLookup(suggestions []Suggestion) (map[string][]Suggestion, []Suggestion) {
+	lookupMap := make(map[string][]Suggestion)
+	possibleMatchesFirstRuneMap := make(map[string]bool)
+	for _, suggestion := range suggestions {
+		firstRune := suggestion.Value[0:1]
+		lookupMap[firstRune] = append(lookupMap[firstRune], suggestion)
+		possibleMatchesFirstRuneMap[firstRune] = true
+	}
+
+	firstRunes := make([]string, 0)
+	for k := range possibleMatchesFirstRuneMap {
+		firstRunes = append(firstRunes, k)
+	}
+	sort.Strings(firstRunes)
+	var allSuggestions []Suggestion
+	for _, firstRune := range firstRunes {
+		allSuggestions = append(allSuggestions, lookupMap[firstRune]...)
+	}
+
+	return lookupMap, allSuggestions
+}
+
 func suggestionsFromFile(contents string) []Suggestion {
 	var suggestions []Suggestion
 	for _, line := range strings.Split(contents, "\n") {
 		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
+		if line != "" {
+			tokens := strings.SplitN(line, ":", 2)
+			value, hint := strings.TrimSpace(tokens[0]), ""
+			if len(tokens) > 1 {
+				hint = strings.TrimSpace(tokens[1])
+			}
+			suggestions = append(suggestions, Suggestion{Value: value, Hint: hint})
 		}
-		tokens := strings.SplitN(line, ":", 2)
-		value, hint := strings.TrimSpace(tokens[0]), ""
-		if len(tokens) > 1 {
-			hint = strings.TrimSpace(tokens[1])
-		}
-		suggestions = append(suggestions, Suggestion{Value: value, Hint: hint})
 	}
 
 	sort.SliceStable(suggestions, func(i, j int) bool {

@@ -18,8 +18,8 @@ A SQL prompt demo with most of the major features in play:
 * Single-line and Multi-line prompt with line numbers
 * [Syntax-Highlighting](prompt/syntax_highlighter.go) - use [Chroma](https://github.com/alecthomas/chroma) or roll-your-own
 * Flexible [Auto-Complete](prompt/auto_completer.go) drop-downs
-  * Start with built-in `AutoCompleter` for simple Keywords `Prompter.SetAutoCompleter(...)`
-  * Expand to context based additional Keywords using `Prompter.SetAutoCompleterContextual(...)`
+  * Start with built-in `AutoCompleter` for simple Keywords `SetAutoCompleter(...)`
+  * Expand to context based additional Keywords using `SetAutoCompleterContextual(...)`
 * Generate prompts with or without a "prefix"
 * Header and Footer generator functions for dynamic content
 * History integration with built-in go-back/go-forward/list/rerun

@@ -8,8 +8,39 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSegment_Render(t *testing.T) {
+func TestSegmentColor(t *testing.T) {
 	s := Segment{}
+
+	c := s.Color()
+	assert.Equal(t, termenv.BackgroundColor(), c.Background)
+	assert.Equal(t, termenv.ForegroundColor(), c.Foreground)
+
+	s.contentColor = &prompt.Color{
+		Foreground: termenv.ANSI256Color(7),
+		Background: termenv.ANSI256Color(16),
+	}
+	c = s.Color()
+	assert.Equal(t, *s.contentColor, c)
+
+	s.color = &prompt.Color{
+		Foreground: termenv.ANSI256Color(17),
+		Background: termenv.ANSI256Color(116),
+	}
+	c = s.Color()
+	assert.Equal(t, *s.color, c)
+}
+
+func TestSegmentHasChanges(t *testing.T) {
+	s := Segment{}
+	assert.False(t, s.HasChanges())
+
+	s.hasChanges = true
+	assert.True(t, s.HasChanges())
+}
+
+func TestSegmentRender(t *testing.T) {
+	s := Segment{}
+	assert.Equal(t, "", s.Render())
 
 	s.SetContent(testIP)
 	assert.True(t, s.hasChanges)
@@ -29,4 +60,92 @@ func TestSegment_Render(t *testing.T) {
 	assert.True(t, s.hasChanges)
 	assert.Equal(t, s.color.Sprint(" "+s.icon+" "+testIP+" "), s.Render())
 	assert.False(t, s.hasChanges)
+
+	s.setPaddingLeft("[")
+	s.setPaddingRight("]")
+	assert.Equal(t, s.color.Sprint("[🌐 0.0.0.0]"), s.Render())
+}
+
+func TestSegmentResetColor(t *testing.T) {
+	s := Segment{}
+	s.SetColor(prompt.Color{
+		Foreground: termenv.ANSI256Color(0),
+		Background: termenv.ANSI256Color(111),
+	})
+	assert.NotNil(t, s.color)
+
+	s.ResetColor()
+	assert.Nil(t, s.color)
+}
+
+func TestSegmentSetColor(t *testing.T) {
+	s := Segment{}
+	s.SetContent("foo")
+	s.hasChanges = false
+	assert.Nil(t, s.color)
+
+	s.SetColor(prompt.Color{
+		Foreground: termenv.ANSI256Color(0),
+		Background: termenv.ANSI256Color(111),
+	})
+	assert.NotNil(t, s.color)
+	assert.True(t, s.hasChanges)
+	s.hasChanges = false
+
+	s.SetColor(prompt.Color{
+		Foreground: termenv.ANSI256Color(0),
+		Background: termenv.ANSI256Color(111),
+	})
+	assert.NotNil(t, s.color)
+	assert.False(t, s.hasChanges)
+	s.hasChanges = false
+
+	s.SetColor(prompt.Color{
+		Foreground: termenv.ANSI256Color(100),
+		Background: termenv.ANSI256Color(111),
+	})
+	assert.NotNil(t, s.color)
+	assert.True(t, s.hasChanges)
+}
+
+func TestSegmentSetContent(t *testing.T) {
+	s := Segment{}
+
+	s.SetContent("foo", "tag1")
+	assert.Equal(t, "foo", s.content)
+	assert.NotNil(t, s.contentColor)
+	assert.True(t, s.HasChanges())
+	s.hasChanges = false
+
+	s.SetContent("foo", "tag1")
+	assert.Equal(t, "foo", s.content)
+	assert.NotNil(t, s.contentColor)
+	assert.False(t, s.HasChanges())
+}
+
+func TestSegmentSetIcon(t *testing.T) {
+	s := Segment{}
+	s.SetContent("foo")
+	s.hasChanges = false
+	assert.Empty(t, s.icon)
+
+	s.SetIcon("foo")
+	assert.Equal(t, "foo", s.icon)
+	assert.True(t, s.hasChanges)
+	s.hasChanges = false
+
+	s.SetIcon("foo")
+	assert.Equal(t, "foo", s.icon)
+	assert.False(t, s.hasChanges)
+}
+
+func TestSegmentWidth(t *testing.T) {
+	s := Segment{}
+	assert.Equal(t, 0, s.Width())
+
+	s.SetContent("foo")
+	assert.Equal(t, 6, s.Width())
+
+	s.SetIcon("bar")
+	assert.Equal(t, 10, s.Width())
 }

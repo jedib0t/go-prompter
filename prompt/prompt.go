@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -15,7 +16,7 @@ import (
 )
 
 var (
-	defaultRefreshInterval = time.Millisecond * 100
+	defaultRefreshInterval = time.Second / 60 // 60hz
 )
 
 type prompt struct {
@@ -42,6 +43,8 @@ type prompt struct {
 	// render state
 	active                      bool
 	activeMutex                 sync.RWMutex
+	autoCompleteForced          bool
+	autoCompleteForcedMutex     sync.RWMutex
 	buffer                      *buffer
 	cursorColor                 Color
 	cursorColorMutex            sync.RWMutex
@@ -371,7 +374,16 @@ func (p *prompt) debugDataAsString() string {
 	p.debugDataMutex.RLock()
 	defer p.debugDataMutex.RUnlock()
 
-	return fmt.Sprint(p.debugData)
+	if len(p.debugData) == 0 {
+		return "none"
+	}
+
+	var nvps []string
+	for k, v := range p.debugData {
+		nvps = append(nvps, fmt.Sprintf("%s=%s", k, v))
+	}
+	sort.Strings(nvps)
+	return strings.Join(nvps, "; ")
 }
 
 func (p *prompt) doSyntaxHighlighting(lines []string) []string {
@@ -390,6 +402,20 @@ func (p *prompt) doSyntaxHighlighting(lines []string) []string {
 	}
 
 	return cacheVal
+}
+
+func (p *prompt) forceAutoComplete(v bool) {
+	p.autoCompleteForcedMutex.Lock()
+	defer p.autoCompleteForcedMutex.Unlock()
+
+	p.autoCompleteForced = v
+}
+
+func (p *prompt) forcedAutoComplete() bool {
+	p.autoCompleteForcedMutex.Lock()
+	defer p.autoCompleteForcedMutex.Unlock()
+
+	return p.autoCompleteForced
 }
 
 func (p *prompt) getCursorColor() Color {
@@ -501,6 +527,14 @@ func (p *prompt) pauseRender() {
 	defer p.renderingPausedMutex.Unlock()
 
 	p.renderingPaused = true
+}
+
+func (p *prompt) resetSuggestions() {
+	p.suggestionsMutex.Lock()
+	defer p.suggestionsMutex.Unlock()
+
+	p.suggestions = make([]Suggestion, 0)
+	p.suggestionsIdx = 0
 }
 
 func (p *prompt) resumeRender() {

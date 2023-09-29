@@ -19,6 +19,14 @@ func BenchmarkAutoComplete(b *testing.B) {
 	}
 }
 
+func TestSuggestionString(t *testing.T) {
+	s := Suggestion{
+		Value: "val",
+		Hint:  "hint",
+	}
+	assert.Equal(t, "val: hint", s.String())
+}
+
 func TestAutoCompleteGoLangKeywords(t *testing.T) {
 	ac := AutoCompleteGoLangKeywords()
 
@@ -33,7 +41,8 @@ func TestAutoCompleteGoLangKeywords(t *testing.T) {
 	assert.Len(t, matches, 1)
 	assert.Equal(t, "case", matches[0].Value)
 	matches = ac("case", "case", 0)
-	assert.Empty(t, matches)
+	assert.Len(t, matches, 1)
+	assert.Equal(t, "case", matches[0].Value)
 }
 
 func TestAutoCompletePythonKeywords(t *testing.T) {
@@ -57,7 +66,8 @@ func TestAutoCompletePythonKeywords(t *testing.T) {
 	assert.Len(t, matches, 1)
 	assert.Equal(t, "assert", matches[0].Value)
 	matches = ac("assert", "assert", 0)
-	assert.Empty(t, matches)
+	assert.Len(t, matches, 1)
+	assert.Equal(t, "assert", matches[0].Value)
 }
 
 func TestAutoCompleteSQLKeywords(t *testing.T) {
@@ -74,7 +84,8 @@ func TestAutoCompleteSQLKeywords(t *testing.T) {
 	assert.Len(t, matches, 1)
 	assert.Equal(t, "select", matches[0].Value)
 	matches = ac("select", "select", 0)
-	assert.Empty(t, matches)
+	assert.Len(t, matches, 1)
+	assert.Equal(t, "select", matches[0].Value)
 
 	matches = ac("SELECT * fr", "fr", 9)
 	assert.Len(t, matches, 3)
@@ -85,45 +96,56 @@ func TestAutoCompleteSQLKeywords(t *testing.T) {
 	assert.Len(t, matches, 1)
 	assert.Equal(t, "from", matches[0].Value)
 	matches = ac("SELECT * from", "from", 9)
-	assert.Empty(t, matches)
+	assert.Len(t, matches, 1)
+	assert.Equal(t, "from", matches[0].Value)
 }
 
 func TestAutoCompleteWords(t *testing.T) {
 	t.Run("case insensitive", func(t *testing.T) {
 		suggestions := []Suggestion{{Value: "foo"}, {Value: "BAZ"}, {Value: "bar"}}
-		ac := AutoCompleteSimple(suggestions, 2, true)
+		ac := AutoCompleteSimple(suggestions, true)
 
 		matches := ac("A Big Croc", "Croc", 6)
 		assert.Empty(t, matches)
 
 		matches = ac("fo", "f", 0)
-		assert.Empty(t, matches)
+		assert.Len(t, matches, 1)
+		assert.Equal(t, "foo", matches[0].Value)
 		matches = ac("fo", "fo", 0)
 		assert.Len(t, matches, 1)
 		assert.Equal(t, "foo", matches[0].Value)
 		matches = ac("foo", "foo", 0)
-		assert.Empty(t, matches)
+		assert.Len(t, matches, 1)
+		assert.Equal(t, "foo", matches[0].Value)
 
 		matches = ac("foo BA", "BA", 4)
 		assert.Len(t, matches, 2)
 		assert.Equal(t, "bar", matches[0].Value)
 		assert.Equal(t, "baz", matches[1].Value)
+
+		matches = ac("foo ", "", 4)
+		assert.Len(t, matches, 3)
+		assert.Equal(t, "bar", matches[0].Value)
+		assert.Equal(t, "baz", matches[1].Value)
+		assert.Equal(t, "foo", matches[2].Value)
 	})
 
 	t.Run("case sensitive", func(t *testing.T) {
 		suggestions := []Suggestion{{Value: "foo"}, {Value: "BAZ"}, {Value: "bar"}}
-		ac := AutoCompleteSimple(suggestions, 2, false)
+		ac := AutoCompleteSimple(suggestions, false)
 
 		matches := ac("A Big Croc", "Croc", 6)
 		assert.Empty(t, matches)
 
 		matches = ac("fo", "f", 0)
-		assert.Empty(t, matches)
+		assert.Len(t, matches, 1)
+		assert.Equal(t, "foo", matches[0].Value)
 		matches = ac("fo", "fo", 0)
 		assert.Len(t, matches, 1)
 		assert.Equal(t, "foo", matches[0].Value)
 		matches = ac("foo", "foo", 0)
-		assert.Empty(t, matches)
+		assert.Len(t, matches, 1)
+		assert.Equal(t, "foo", matches[0].Value)
 
 		matches = ac("foo ba", "ba", 4)
 		assert.Len(t, matches, 1)
@@ -132,5 +154,11 @@ func TestAutoCompleteWords(t *testing.T) {
 		matches = ac("foo BA", "BA", 4)
 		assert.Len(t, matches, 1)
 		assert.Equal(t, "BAZ", matches[0].Value)
+
+		matches = ac("foo ", "", 4)
+		assert.Len(t, matches, 3)
+		assert.Equal(t, "BAZ", matches[0].Value)
+		assert.Equal(t, "bar", matches[1].Value)
+		assert.Equal(t, "foo", matches[2].Value)
 	})
 }

@@ -143,7 +143,7 @@ type Prompter interface {
 // - no auto-complete
 // - command patterns to invoke history (list old commands, invoke old command)
 // - simple prefix "> " for the prompt
-// - 100ms refresh/redraw interval
+// - 60hz refresh rate
 // - the default style with a 500ms cursor blink
 // - no termination checker (i.e., Enter terminates command)
 func New() (Prompter, error) {

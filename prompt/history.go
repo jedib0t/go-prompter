@@ -46,9 +46,8 @@ func (h *History) Get(n int) string {
 
 // GetNext returns the next command in history.
 func (h *History) GetNext() string {
-	h.Index++
-	if h.Index > len(h.Commands) {
-		h.Index = len(h.Commands)
+	if h.Index < len(h.Commands) {
+		h.Index++
 	}
 	return h.Get(h.Index)
 }
@@ -136,7 +135,11 @@ func (p *prompt) processHistoryCommand(input string) *historyCommand {
 		input = strings.TrimSpace(input)
 		itemNum, err := strconv.Atoi(input)
 		if err != nil {
-			itemNum = 0
+			if input == p.historyExecPrefix { // prefix=!; input.original=!!; input=!
+				itemNum = len(p.History())
+			} else {
+				itemNum = 0
+			}
 		}
 		return &historyCommand{Type: historyCommandExec, Value: itemNum}
 	}

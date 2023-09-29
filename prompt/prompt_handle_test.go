@@ -25,7 +25,7 @@ func generateTestPromptWithBuffer(t *testing.T, ctx context.Context, text string
 	return p
 }
 
-func TestPrompt_handleHistoryExec(t *testing.T) {
+func TestPrompthandleHistoryExec(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -46,7 +46,7 @@ func TestPrompt_handleHistoryExec(t *testing.T) {
 	assert.False(t, p.renderingPaused)
 }
 
-func TestPrompt_handleHistoryList(t *testing.T) {
+func TestPrompthandleHistoryList(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -60,7 +60,7 @@ func TestPrompt_handleHistoryList(t *testing.T) {
 	assert.False(t, p.renderingPaused)
 }
 
-func TestPrompt_handleKey(t *testing.T) {
+func TestPrompthandleKey(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -87,7 +87,7 @@ func TestPrompt_handleKey(t *testing.T) {
 	})
 }
 
-func TestPrompt_handleKeyAutoComplete(t *testing.T) {
+func TestPrompthandleKeyAutoComplete(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -146,7 +146,7 @@ func TestPrompt_handleKeyAutoComplete(t *testing.T) {
 	})
 }
 
-func TestPrompt_handleKeyInsert(t *testing.T) {
+func TestPrompthandleKeyInsert(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 

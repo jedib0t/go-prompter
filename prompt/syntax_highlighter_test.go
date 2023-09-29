@@ -6,6 +6,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestSyntaxHighlighterChroma(t *testing.T) {
+	sh, err := SyntaxHighlighterChroma("foo", "bar", "baz")
+	assert.Nil(t, sh)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), ErrUnsupportedChromaLanguage.Error())
+	assert.Contains(t, err.Error(), "\"foo\"")
+
+	sh, err = SyntaxHighlighterChroma("sql", "bar", "baz")
+	assert.NotNil(t, sh)
+	assert.Nil(t, err)
+}
+
 func TestSyntaxHighlighterSQL(t *testing.T) {
 	sh, err := SyntaxHighlighterSQL()
 	assert.NotNil(t, sh)

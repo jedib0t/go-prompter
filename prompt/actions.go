@@ -18,6 +18,7 @@ const (
 	/*
 	 * Insert-mode Actions
 	 */
+	AutoComplete           Action = "AutoComplete"           // force an auto-complete
 	DeleteCharCurrent      Action = "DeleteCharCurrent"      // delete the character at the cursor
 	DeleteCharPrevious     Action = "DeleteCharPrevious"     // delete the character before the cursor
 	DeleteWordNext         Action = "DeleteWordNext"         // delete the next work

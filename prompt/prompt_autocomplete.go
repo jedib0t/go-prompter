@@ -76,7 +76,10 @@ func (p *prompt) updateSuggestionsInternal(lastLine string, lastWord string, las
 	p.buffer.mutex.Unlock()
 
 	// if there is no word currently, clear drop-down
-	if word == "" || idx < 0 {
+	forced := false
+	if p.forcedAutoComplete() {
+		forced = true
+	} else if word == "" || idx < 0 {
 		p.setSuggestions(make([]Suggestion, 0))
 		p.clearDebugData("ac.")
 		return line, word, idx
@@ -85,7 +88,7 @@ func (p *prompt) updateSuggestionsInternal(lastLine string, lastWord string, las
 	// if there is no change compared to before, return old result
 	p.setDebugData("ac.idx", fmt.Sprint(idx))
 	p.setDebugData("ac.word", fmt.Sprintf("%#v", word))
-	if line == lastLine && word == lastWord && idx == lastIdx {
+	if (line == lastLine && word == lastWord && idx == lastIdx) && !forced {
 		return line, word, idx
 	}
 

@@ -51,7 +51,7 @@ func BenchmarkPowerline_Render(b *testing.B) {
 	}
 }
 
-func TestPowerline_Render(t *testing.T) {
+func TestPowerlineRender(t *testing.T) {
 	segUser := &Segment{}
 	segUser.SetContent("username")
 	segUser.SetIcon("👤")
@@ -71,13 +71,17 @@ func TestPowerline_Render(t *testing.T) {
 	style := StyleNonPatched
 	style.Color = prompt.Color{Foreground: termenv.ANSI256Color(235), Background: termenv.ANSI256Color(235)}
 
-	p := Powerline{}
-	p.Append(segUser)
-	p.Append(segHost)
-	p.Append(segCmdNum)
-	p.AppendRight(segHostIP)
-	p.AppendRight(segTime)
-	p.SetStyle(style)
+	t.Run("with segments on one side", func(t *testing.T) {
+		p := Powerline{}
+		p.Append(segUser)
+		p.Append(segHost)
+		p.Append(segCmdNum)
+
+		assert.Equal(t,
+			segUser.Render()+segHost.Render()+segCmdNum.Render(),
+			p.Render(0),
+		)
+	})
 
 	expectedOut120 := segUser.Render() +
 		"\x1b[38;5;205;48;5;17m" + style.SeparatorLeft + "\x1b[0m" +
@@ -104,6 +108,13 @@ func TestPowerline_Render(t *testing.T) {
 		segTime.Render()
 
 	t.Run("without auto-adjusting width", func(t *testing.T) {
+		p := Powerline{}
+		p.Append(segUser)
+		p.Append(segHost)
+		p.Append(segCmdNum)
+		p.AppendRight(segHostIP)
+		p.AppendRight(segTime)
+		p.SetStyle(style)
 		p.AutoAdjustWidth(false)
 
 		assert.Equal(t, expectedOut120, p.Render(120))
@@ -120,20 +131,30 @@ func TestPowerline_Render(t *testing.T) {
 				segHostIP.Render()+
 				"\x1b[38;5;201;48;5;239m"+style.SeparatorRight+"\x1b[0m"+
 				segTime.Render(),
-			p.Render(25))
+			p.Render(25),
+		)
 	})
 
 	t.Run("with auto-adjusting width", func(t *testing.T) {
+		p := Powerline{}
+		p.Append(segUser)
+		p.Append(segHost)
+		p.Append(segCmdNum)
+		p.AppendRight(segHostIP)
+		p.AppendRight(segTime)
+		p.SetStyle(style)
 		p.AutoAdjustWidth(true)
 
 		assert.Equal(t, expectedOut120, p.Render(120))
 		assert.Equal(t, expectedOut50, p.Render(50))
+		assert.Equal(t, expectedOut50, p.Render(50)) // to check cache
 		assert.Equal(t,
 			segUser.Render()+
 				"\x1b[38;5;235;48;5;17m"+style.SeparatorLeft+"\x1b[0m"+
 				style.Color.Sprint("")+
 				"\x1b[38;5;235;48;5;239m"+style.SeparatorRight+"\x1b[0m"+
 				segTime.Render(),
-			p.Render(25))
+			p.Render(25),
+		)
 	})
 }

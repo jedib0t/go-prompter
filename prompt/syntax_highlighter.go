@@ -24,18 +24,8 @@ func SyntaxHighlighterChroma(language, formatter, style string) (SyntaxHighlight
 			ErrUnsupportedChromaLanguage, language)
 	}
 	l = chroma.Coalesce(l)
-
 	f := formatters.Get(formatter)
-	if f == nil {
-		return nil, fmt.Errorf("%w: %#v (check Chroma formatters documentation)",
-			ErrUnsupportedChromaFormatter, formatter)
-	}
-
 	s := styles.Get(style)
-	if s == nil {
-		return nil, fmt.Errorf("%w: %#v (check Chroma styles documentation)",
-			ErrUnsupportedChromaStyle, style)
-	}
 
 	return func(input string) string {
 		if iterator, err := l.Tokenise(nil, input); err == nil {
