@@ -97,35 +97,19 @@ func (p *Powerline) autoAdjustNumSegments(maxWidth int) (int, int, int) {
 		return len(p.left), len(p.right), 0
 	}
 
-	l, r := 0, 0
-	currWidth, handledRight := 0, true
-	for {
-		if l == len(p.left) && r == len(p.right) { // appended everything
+	idxLeft, idxRight := 0, 0
+	isDone, usedWidth := false, 0
+	for idx := 0; !isDone && idx < 1024; /* 512 segments per side */ idx++ {
+		if idxLeft == len(p.left) && idxRight == len(p.right) { // appended everything
 			break
 		}
-		if handledRight { // append a left segment
-			if l < len(p.left) {
-				addlWidth := p.left[l].Width()
-				if currWidth+addlWidth > maxWidth {
-					break
-				}
-				currWidth += addlWidth
-				l++
-			}
-			handledRight = false
+		if idx%2 == 0 { // append a left segment
+			idxLeft, usedWidth, isDone = appendSegmentIfUnderWidth(p.left, idxLeft, usedWidth, maxWidth)
 		} else { // append a right segment
-			if r < len(p.right) {
-				addlWidth := p.right[r].Width()
-				if currWidth+addlWidth > maxWidth {
-					break
-				}
-				currWidth += addlWidth
-				r++
-			}
-			handledRight = true
+			idxRight, usedWidth, isDone = appendSegmentIfUnderWidth(p.right, idxRight, usedWidth, maxWidth)
 		}
 	}
-	return l, r, maxWidth - currWidth
+	return idxLeft, idxRight, maxWidth - usedWidth
 }
 
 func (p *Powerline) hasChangesLeft() bool {
@@ -167,27 +151,15 @@ func (p *Powerline) renderLeft(maxWidth, nsLeft, nsRight, paddingSpace int) stri
 	// inject all the segments now
 	sep := p.style.SeparatorLeft
 	for idx, segment := range segments {
+		// segment: set up margin and append
 		if idx == 0 {
 			segment.setPaddingLeft(p.style.MarginLeft)
 		}
-
-		// segment
 		left = append(left, segment.Render())
 
 		// separator
 		if len(sep) > 0 {
-			sepColor := prompt.Color{
-				Background: p.style.Color.Background,
-				Foreground: segment.Color().Background,
-			}
-			if idx < len(segments)-1 {
-				sepColor.Background = segments[idx+1].Color().Background
-			} else if idx == len(segments)-1 {
-				sepColor.Background = p.style.Color.Background
-			}
-			if p.style.InvertSeparatorColors {
-				sepColor = sepColor.Invert()
-			}
+			sepColor := p.separatorColor(segments, idx, true)
 			left = append(left, sepColor.Sprint(sep))
 		}
 	}
@@ -220,28 +192,54 @@ func (p *Powerline) renderRight(maxWidth, nsLeft, nsRight, paddingSpace int) str
 	for idx, segment := range segments {
 		// separator
 		if len(sep) > 0 {
-			sepColor := prompt.Color{
-				Foreground: segment.Color().Background,
-				Background: p.style.Color.Background,
-			}
-			if idx > 0 {
-				sepColor.Background = segments[idx-1].Color().Background
-			}
-			if p.style.InvertSeparatorColors {
-				sepColor = sepColor.Invert()
-			}
+			sepColor := p.separatorColor(segments, idx, false)
 			right = append(right, sepColor.Sprint(sep))
 		}
 
-		// set up the margin
+		// segment: set up the margin and append
 		if idx == len(segments)-1 {
 			segment.setPaddingLeft(p.style.MarginLeft)
 		}
-
-		// segment
 		right = append(right, segment.Render())
 	}
 
 	p.rightRendered = strings.Join(right, "")
 	return p.rightRendered
+}
+
+func appendSegmentIfUnderWidth(segments []*Segment, idx int, usedWidth int, maxWidth int) (int, int, bool) {
+	if idx < len(segments) {
+		addlWidth := segments[idx].Width()
+		if usedWidth+addlWidth > maxWidth {
+			return idx, usedWidth, true
+		}
+		usedWidth += addlWidth
+		idx++
+	}
+	return idx, usedWidth, false
+}
+
+func (p *Powerline) separatorColor(segments []*Segment, idx int, leftSide bool) prompt.Color {
+	c := prompt.Color{
+		Background: p.style.Color.Background,
+		Foreground: segments[idx].Color().Background,
+	}
+
+	if leftSide {
+		if idx+1 < len(segments) {
+			c.Background = segments[idx+1].Color().Background
+		} else if idx == len(segments)-1 { // last segment, use powerline's background
+			c.Background = p.style.Color.Background
+		}
+	} else { // right side
+		if idx > 0 {
+			c.Background = segments[idx-1].Color().Background
+		}
+	}
+
+	if p.style.InvertSeparatorColors {
+		c = c.Invert()
+	}
+
+	return c
 }

@@ -165,7 +165,7 @@ func TestOverwriteContent(t *testing.T) {
 	})
 }
 
-func Benchmark_stringSubset(b *testing.B) {
+func BenchmarkStringSubset(b *testing.B) {
 	color1 := Color{
 		Foreground: termenv.ANSI256Color(0),
 		Background: termenv.ANSI256Color(12),

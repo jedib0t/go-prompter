@@ -13,7 +13,7 @@ var (
 	testIP = "0.0.0.0"
 )
 
-func BenchmarkPowerline_Render(b *testing.B) {
+func BenchmarkPowerlineRender(b *testing.B) {
 	segHostname := &Segment{}
 	segHostname.SetContent("hostname")
 	segHostname.SetColor(prompt.Color{Foreground: termenv.ANSI256Color(7), Background: termenv.ANSI256Color(23)})
