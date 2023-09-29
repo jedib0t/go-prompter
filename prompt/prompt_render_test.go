@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPromptrenderView(t *testing.T) {
+func TestPromptRenderView(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -115,8 +115,8 @@ func TestPromptrenderView(t *testing.T) {
 	p.updateModel(true)
 	p.renderView(termenv.NewOutput(&output), "test-debug")
 	actualLines := strings.Split(output.String(), "\n")
-	assert.Len(t, actualLines, 5)
-	assert.Contains(t, "foo=bar", actualLines[4])
-	assert.Contains(t, "reason=test-debug", actualLines[4])
-	assert.Contains(t, "time=", actualLines[4])
+	assert.Len(t, actualLines, 5, testSubtitle)
+	assert.Contains(t, "foo=bar", actualLines[4], testSubtitle)
+	assert.Contains(t, "reason=test-debug", actualLines[4], testSubtitle)
+	assert.Contains(t, "time=", actualLines[4], testSubtitle)
 }

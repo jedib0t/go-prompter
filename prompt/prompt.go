@@ -118,7 +118,7 @@ func (p *prompt) Prompt(ctx context.Context) (string, error) {
 	defer p.markInactive()
 
 	// sanity checks
-	if err := p.style.validate(); err != nil {
+	if err := p.style.Validate(); err != nil {
 		return "", err
 	}
 
