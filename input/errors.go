@@ -2,6 +2,6 @@ package input
 
 import "fmt"
 
-// ErrDisallowedAction is returned when an action is attempted that is not
-// allowed at this time.
-var ErrDisallowedAction = fmt.Errorf("action not allowed at this time")
+// ErrUnsupportedMessage is returned on an attempt to Send an unsupported object
+// or message.
+var ErrUnsupportedMessage = fmt.Errorf("unsupported message")

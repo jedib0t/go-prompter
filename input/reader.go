@@ -48,11 +48,12 @@ func NewReader(opts ...Option) Reader {
 }
 
 type reader struct {
+	chDone             chan bool
 	chErrors           chan error
 	chKeyEvents        chan tea.KeyMsg
 	chMouseEvents      chan tea.MouseMsg
 	chWindowSizeEvents chan tea.WindowSizeMsg
-	done               chan bool
+	done               bool
 	input              io.Reader
 	mutex              sync.Mutex
 	program            *tea.Program
@@ -67,6 +68,7 @@ type reader struct {
 func (r *reader) Begin(ctx context.Context) {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
+	r.done = false
 
 	r.programMutex.Lock()
 	r.program = tea.NewProgram(r.teaBag, r.progOpts(ctx)...)
@@ -76,7 +78,7 @@ func (r *reader) Begin(ctx context.Context) {
 	if err != nil {
 		r.chErrors <- err
 	}
-	r.done <- true
+	r.chDone <- true
 }
 
 // End stops the input handling and cleans up.
@@ -87,7 +89,7 @@ func (r *reader) End() {
 	if r.program != nil {
 		r.program.Quit()
 		r.program = nil
-		<-r.done
+		<-r.chDone
 	}
 }
 
@@ -122,7 +124,7 @@ func (r *reader) Send(msg any) error {
 	case tea.WindowSizeMsg:
 		r.chWindowSizeEvents <- obj
 	default:
-		return fmt.Errorf("unsupported message type: %#v", msg)
+		return fmt.Errorf("%w: %#v", ErrUnsupportedMessage, msg)
 	}
 	return nil
 }
@@ -145,12 +147,13 @@ func (r *reader) Reset() error {
 }
 
 func (r *reader) init() {
+	r.chDone = make(chan bool, 1)
 	r.chErrors = make(chan error, 5)
 	r.chKeyEvents = make(chan tea.KeyMsg, 5)
 	r.chMouseEvents = make(chan tea.MouseMsg, 5)
 	r.chWindowSizeEvents = make(chan tea.WindowSizeMsg, 5)
-	r.done = make(chan bool, 1)
 	r.teaBag = &teaBag{
+		ErrorEvents:     r.chErrors,
 		KeyEvents:       r.chKeyEvents,
 		MouseEvents:     r.chMouseEvents,
 		ResizeEvents:    r.chWindowSizeEvents,
@@ -176,6 +179,7 @@ func (r *reader) progOpts(ctx context.Context) []tea.ProgramOption {
 
 // teaBag wraps a bubbletea model. Get it?
 type teaBag struct {
+	ErrorEvents     chan error
 	KeyEvents       chan tea.KeyMsg
 	MouseEvents     chan tea.MouseMsg
 	ResizeEvents    chan tea.WindowSizeMsg
@@ -189,6 +193,8 @@ func (tb *teaBag) Init() tea.Cmd {
 
 func (tb *teaBag) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case error:
+		tb.ErrorEvents <- msg
 	case tea.KeyMsg:
 		tb.KeyEvents <- msg
 	case tea.MouseMsg:
