@@ -19,14 +19,11 @@ var (
 	testWindowSizeMsg = tea.WindowSizeMsg{}
 )
 
-func TestReader_Begin(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-
+func generateTestReader(ctx context.Context, t *testing.T, opts ...Option) (Reader, *reader) {
 	var in bytes.Reader
-	r := NewReader(WithInput(&in))
+	opts = append([]Option{WithInput(&in)}, opts...)
+	r := NewReader(opts...)
 	go r.Begin(ctx)
-	defer r.End()
 	<-time.After(time.Second / 4) // time to begin
 
 	rObj, ok := r.(*reader)
@@ -36,6 +33,16 @@ func TestReader_Begin(t *testing.T) {
 		t.FailNow()
 	}
 	assert.NotNil(t, rObj.program)
+
+	return r, rObj
+}
+
+func TestReader_Begin(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	r, rObj := generateTestReader(ctx, t)
+	defer r.End()
 
 	rObj.program.Kill()
 	err, ok := <-r.Errors()
@@ -48,19 +55,8 @@ func TestReader_Errors(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	var in bytes.Reader
-	r := NewReader(WithInput(&in))
-	go r.Begin(ctx)
+	r, rObj := generateTestReader(ctx, t)
 	defer r.End()
-	<-time.After(time.Second / 4) // time to begin
-
-	rObj, ok := r.(*reader)
-	assert.NotNil(t, rObj)
-	assert.True(t, ok)
-	if !ok {
-		t.FailNow()
-	}
-	assert.NotNil(t, rObj.program)
 
 	rObj.program.Send(errFoo)
 	received, ok := <-r.Errors()
@@ -73,19 +69,8 @@ func TestReader_KeyEvents(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	var in bytes.Reader
-	r := NewReader(WithInput(&in))
-	go r.Begin(ctx)
+	r, rObj := generateTestReader(ctx, t)
 	defer r.End()
-	<-time.After(time.Second / 4) // time to begin
-
-	rObj, ok := r.(*reader)
-	assert.NotNil(t, rObj)
-	assert.True(t, ok)
-	if !ok {
-		t.FailNow()
-	}
-	assert.NotNil(t, rObj.program)
 
 	rObj.program.Send(testKeyMsg)
 	received, ok := <-r.KeyEvents()
@@ -99,20 +84,8 @@ func TestReader_MouseEvents(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
-		var in bytes.Reader
-		opts = append([]Option{WithInput(&in)}, opts...)
-		r := NewReader(opts...)
-		go r.Begin(ctx)
+		r, rObj := generateTestReader(ctx, t, opts...)
 		defer r.End()
-		<-time.After(time.Second / 4) // time to begin
-
-		rObj, ok := r.(*reader)
-		assert.NotNil(t, rObj)
-		assert.True(t, ok)
-		if !ok {
-			t.FailNow()
-		}
-		assert.NotNil(t, rObj.program)
 
 		rObj.program.Send(testMouseMsg)
 		received, ok := <-r.MouseEvents()
@@ -206,19 +179,8 @@ func TestReader_WindowSizeEvents(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	var in bytes.Reader
-	r := NewReader(WithInput(&in), WatchWindowSize())
-	go r.Begin(ctx)
+	r, rObj := generateTestReader(ctx, t, WatchWindowSize())
 	defer r.End()
-	<-time.After(time.Second / 4) // time to begin
-
-	rObj, ok := r.(*reader)
-	assert.NotNil(t, rObj)
-	assert.True(t, ok)
-	if !ok {
-		t.FailNow()
-	}
-	assert.NotNil(t, rObj.program)
 
 	rObj.program.Send(testWindowSizeMsg)
 	received, ok := <-r.WindowSizeEvents()
