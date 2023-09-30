@@ -154,7 +154,7 @@ func (b *buffer) DeleteWordBackward() {
 	foundWord := false
 	line := b.getCurrentLine()
 	for idx := b.cursor.Column - 1; idx >= 0; idx-- {
-		isPartOfWord := b.isPartOfWord(line[idx])
+		isPartOfWord := isPartOfWord(line[idx])
 		if !isPartOfWord && foundWord {
 			b.lines[b.cursor.Line] = line[:idx] + line[b.cursor.Column:]
 			b.cursor.Column = idx
@@ -184,7 +184,7 @@ func (b *buffer) DeleteWordForward() {
 	// delete till beginning of previous word
 	foundWord, foundNonWord := false, false
 	for idx := b.cursor.Column; idx < len(line); idx++ {
-		isPartOfWord := b.isPartOfWord(line[idx])
+		isPartOfWord := isPartOfWord(line[idx])
 		if !isPartOfWord {
 			foundNonWord = true
 		}
@@ -511,7 +511,7 @@ func (b *buffer) MoveWordLeft(locked ...bool) {
 		line := b.lines[lineIdx]
 		for colIdx := b.cursor.Column - 1; colIdx >= 0; colIdx-- {
 			b.cursor.Column = colIdx
-			isPartOfWord := b.isPartOfWord(line[colIdx])
+			isPartOfWord := isPartOfWord(line[colIdx])
 			if foundWord && (!isPartOfWord || colIdx == 0) {
 				if !isPartOfWord {
 					b.cursor.Column++
@@ -559,7 +559,7 @@ func (b *buffer) MoveWordRight(locked ...bool) {
 		line := b.lines[lineIdx]
 		for colIdx := b.cursor.Column; colIdx < len(line); colIdx++ {
 			b.cursor.Column = colIdx
-			isPartOfWord := b.isPartOfWord(line[b.cursor.Column])
+			isPartOfWord := isPartOfWord(line[b.cursor.Column])
 			if isPartOfWord && foundBreak {
 				return
 			}
@@ -616,19 +616,19 @@ func (b *buffer) getCurrentLine() string {
 }
 
 func (b *buffer) getCurrentWord(line string) (string, int, int) {
-	if len(line) == 0 || b.cursor.Column >= len(line) || !b.isPartOfWord(line[b.cursor.Column]) {
+	if len(line) == 0 || b.cursor.Column >= len(line) || !isPartOfWord(line[b.cursor.Column]) {
 		return "", -1, -1
 	}
 
 	idxWordStart, idxWordEnd := -1, -1
 	for idx := b.cursor.Column; idx >= 0; idx-- {
-		if !b.isPartOfWord(line[idx]) {
+		if !isPartOfWord(line[idx]) {
 			break
 		}
 		idxWordStart = idx
 	}
 	for idx := b.cursor.Column; idx < len(line); idx++ {
-		if !b.isPartOfWord(line[idx]) {
+		if !isPartOfWord(line[idx]) {
 			break
 		}
 		idxWordEnd = idx
@@ -641,12 +641,17 @@ func (b *buffer) getLine(n int) string {
 	return b.lines[n]
 }
 
-func (b *buffer) getWordAtCursor() (string, int) {
+func (b *buffer) getWordAtCursor(wordDelimiters map[byte]bool) (string, int) {
 	line := b.getCurrentLine()
 	if b.cursor.Column == len(line) || (b.cursor.Column < len(line) && line[b.cursor.Column] == ' ') {
 		idxWordStart := -1
 		for idx := b.cursor.Column - 1; idx >= 0; idx-- {
-			if !b.isPartOfWord(line[idx]) {
+			r := line[idx]
+			if wordDelimiters != nil {
+				if wordDelimiters[r] {
+					break
+				}
+			} else if !isPartOfWord(r) {
 				break
 			}
 			idxWordStart = idx
@@ -656,27 +661,6 @@ func (b *buffer) getWordAtCursor() (string, int) {
 		}
 	}
 	return "", -1
-}
-
-var (
-	reNonWordRunes = map[byte]bool{
-		' ':  true,
-		'(':  true,
-		')':  true,
-		',':  true,
-		'.':  true,
-		';':  true,
-		'[':  true,
-		'\n': true,
-		'\t': true,
-		']':  true,
-		'{':  true,
-		'}':  true,
-	}
-)
-
-func (b *buffer) isPartOfWord(r byte) bool {
-	return !reNonWordRunes[r]
 }
 
 type linesChangedMap map[int]bool
@@ -718,4 +702,25 @@ func (lc linesChangedMap) String() string {
 	}
 	sort.Ints(lines)
 	return fmt.Sprintf("%v", lines)
+}
+
+var (
+	nonWordRunes = map[byte]bool{
+		' ':  true,
+		'(':  true,
+		')':  true,
+		',':  true,
+		'.':  true,
+		';':  true,
+		'[':  true,
+		'\n': true,
+		'\t': true,
+		']':  true,
+		'{':  true,
+		'}':  true,
+	}
+)
+
+func isPartOfWord(r byte) bool {
+	return !nonWordRunes[r]
 }

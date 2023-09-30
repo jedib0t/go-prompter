@@ -44,12 +44,14 @@ type StyleAutoComplete struct {
 	HintSelectedColor  Color          `json:"hint_selected_color"`
 	HintLengthMin      int            `json:"hint_length_min"`
 	HintLengthMax      int            `json:"hint_length_max"`
+	MinChars           int            `json:"min_chars"`
 	NumItems           int            `json:"num_items"`
 	Scrollbar          StyleScrollbar `json:"scrollbar"`
 	ValueColor         Color          `json:"value_color"`
 	ValueSelectedColor Color          `json:"value_selected_color"`
 	ValueLengthMin     int            `json:"value_length_min"`
 	ValueLengthMax     int            `json:"value_length_max"`
+	WordDelimiters     map[byte]bool  `json:"word_delimiters"`
 }
 
 // StyleAutoCompleteDefault - default Style when none provided.
@@ -64,6 +66,7 @@ var StyleAutoCompleteDefault = StyleAutoComplete{
 	},
 	HintLengthMin: 8,
 	HintLengthMax: 32,
+	MinChars:      0,
 	NumItems:      4,
 	Scrollbar:     StyleScrollbarAutoComplete,
 	ValueColor: Color{
@@ -76,6 +79,19 @@ var StyleAutoCompleteDefault = StyleAutoComplete{
 	},
 	ValueLengthMin: 8,
 	ValueLengthMax: 32,
+	WordDelimiters: map[byte]bool{
+		' ':  true,
+		'(':  true,
+		')':  true,
+		',':  true,
+		';':  true,
+		'[':  true,
+		'\n': true,
+		'\t': true,
+		']':  true,
+		'{':  true,
+		'}':  true,
+	},
 }
 
 // StyleColors is used to customize the colors used on the prompt.
@@ -169,8 +185,8 @@ var (
 	StyleLineNumbersEnabled = StyleLineNumbers{
 		Enabled: true,
 		Color: Color{
-			Foreground: termenv.ANSI256Color(240),
-			Background: termenv.ANSI256Color(236),
+			Foreground: termenv.ANSI256Color(239),
+			Background: termenv.ANSI256Color(235),
 		},
 		ZeroPrefixed: false,
 	}

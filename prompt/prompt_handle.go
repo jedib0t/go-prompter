@@ -56,7 +56,7 @@ var autoCompleteActionHandlerMap = map[Action]actionHandler{
 		return nil
 	},
 	AutoCompleteSelect: func(p *prompt, output *termenv.Output, key tea.KeyMsg) error {
-		word, _ := p.buffer.getWordAtCursor()
+		word, _ := p.buffer.getWordAtCursor(p.style.AutoComplete.WordDelimiters)
 		suggestions, suggestionsIdx := p.getSuggestionsAndIdx()
 		if suggestionsIdx < len(suggestions) {
 			suggestion := suggestions[suggestionsIdx].Value

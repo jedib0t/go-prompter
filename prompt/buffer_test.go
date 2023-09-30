@@ -794,24 +794,32 @@ func TestBuffer_getWordAtCursor(t *testing.T) {
 	b.InsertString("foo bar baz foo")
 
 	b.cursor.Column = 11
-	word, idx := b.getWordAtCursor()
+	word, idx := b.getWordAtCursor(nil)
 	assert.Equal(t, "baz", word)
 	assert.Equal(t, 8, idx)
 
 	b.cursor.Column = 7
-	word, idx = b.getWordAtCursor()
+	word, idx = b.getWordAtCursor(nil)
 	assert.Equal(t, "bar", word)
 	assert.Equal(t, 4, idx)
 
 	b.cursor.Column = 3
-	word, idx = b.getWordAtCursor()
+	word, idx = b.getWordAtCursor(nil)
 	assert.Equal(t, "foo", word)
 	assert.Equal(t, 0, idx)
 
 	b.cursor.Column = 2
-	word, idx = b.getWordAtCursor()
+	word, idx = b.getWordAtCursor(nil)
 	assert.Equal(t, "", word)
 	assert.Equal(t, -1, idx)
+
+	b.Set("foo.")
+	word, idx = b.getWordAtCursor(nil)
+	assert.Equal(t, "", word)
+	assert.Equal(t, -1, idx)
+	word, idx = b.getWordAtCursor(StyleAutoCompleteDefault.WordDelimiters)
+	assert.Equal(t, "foo.", word)
+	assert.Equal(t, 0, idx)
 }
 
 func TestLinesChangedMap(t *testing.T) {

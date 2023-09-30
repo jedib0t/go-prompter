@@ -19,7 +19,7 @@ func (p *prompt) autoComplete(lines []string, cursorPos CursorLocation, startIdx
 
 	// get the line styling
 	linePrefix, prefixWidth, _, numLen, _, _ := p.calculateLineStyling(lines)
-	word, _ := p.buffer.getWordAtCursor()
+	word, _ := p.buffer.getWordAtCursor(p.style.AutoComplete.WordDelimiters)
 	wordLen := len(word)
 
 	// get the suggestions printed to super-impose on the displayed lines
@@ -72,14 +72,15 @@ func (p *prompt) updateSuggestionsInternal(lastLine string, lastWord string, las
 	p.buffer.mutex.Lock()
 	line := p.buffer.getCurrentLine()
 	location := uint(p.buffer.cursor.Column)
-	word, idx := p.buffer.getWordAtCursor()
+	word, idx := p.buffer.getWordAtCursor(p.style.AutoComplete.WordDelimiters)
 	p.buffer.mutex.Unlock()
+	minChars := p.style.AutoComplete.MinChars
 
 	// if there is no word currently, clear drop-down
 	forced := false
 	if p.forcedAutoComplete() {
 		forced = true
-	} else if word == "" || idx < 0 {
+	} else if word == "" || idx < 0 || (minChars > 0 && len(word) < minChars) {
 		p.setSuggestions(make([]Suggestion, 0))
 		p.clearDebugData("ac.")
 		return line, word, idx

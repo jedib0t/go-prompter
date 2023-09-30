@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -99,13 +100,7 @@ func TestPrompt_Prompt(t *testing.T) {
 		assert.True(t, errors.Is(err, ErrInvalidDimensions))
 	})
 
-	t.Run("no error", func(t *testing.T) {
-		chErrors := make(chan error, 1)
-		chKeyEvents := make(chan tea.KeyMsg, 1)
-		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
-
-		mc := gomock.NewController(t)
-		defer mc.Finish()
+	generateTestPromptWithMockReader := func(t *testing.T, ctx context.Context, mc *gomock.Controller, chErrors chan error, chKeyEvents chan tea.KeyMsg, chWindowSizeEvents chan tea.WindowSizeMsg) *prompt {
 		mockReader := mock_input.NewMockReader(mc)
 		mockReader.EXPECT().Begin(gomock.Any())
 		mockReader.EXPECT().Reset()
@@ -116,14 +111,76 @@ func TestPrompt_Prompt(t *testing.T) {
 
 		p := generateTestPrompt(t, ctx)
 		p.reader = mockReader
+		return p
+	}
+
+	t.Run("input reader error", func(t *testing.T) {
+		chErrors := make(chan error, 1)
+		chKeyEvents := make(chan tea.KeyMsg, 1)
+		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
+
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
 		go func() {
-			time.Sleep(time.Second / 10) // some time for all goroutines to start
-			chKeyEvents <- tea.KeyMsg{Type: tea.KeyTab}
+			<-time.After(time.Second / 10) // some time for all goroutines to start
+			chErrors <- fmt.Errorf("test-error")
+		}()
+		userInput, err := p.Prompt(ctx)
+		assert.Empty(t, userInput)
+		assert.NotNil(t, err)
+		assert.Contains(t, err.Error(), "test-error")
+	})
+
+	t.Run("input error", func(t *testing.T) {
+		chErrors := make(chan error, 1)
+		chKeyEvents := make(chan tea.KeyMsg, 1)
+		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
+
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
+		go func() {
+			<-time.After(time.Second / 10) // some time for all goroutines to start
+			chKeyEvents <- tea.KeyMsg{Type: tea.KeyCtrlC}
+		}()
+		userInput, err := p.Prompt(ctx)
+		assert.Empty(t, userInput)
+		assert.NotNil(t, err)
+		assert.True(t, errors.Is(err, ErrAborted))
+	})
+
+	t.Run("no error", func(t *testing.T) {
+		chErrors := make(chan error, 1)
+		chKeyEvents := make(chan tea.KeyMsg, 1)
+		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
+
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
+		go func() {
+			<-time.After(time.Second / 10) // some time for all goroutines to start
+			chKeyEvents <- tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("abc\tdef")}
+			<-time.After(time.Second / 4) // for some rendering
+			chWindowSizeEvents <- tea.WindowSizeMsg{Width: int(p.style.Dimensions.WidthMax + 20)}
+			<-time.After(time.Second / 4) // for some rendering
 			chKeyEvents <- tea.KeyMsg{Type: tea.KeyEnter}
 		}()
 		userInput, err := p.Prompt(ctx)
-		assert.Equal(t, p.style.TabString, userInput)
+		assert.Equal(t, "abc    def", userInput)
 		assert.Nil(t, err)
+		assert.Equal(t, int(p.style.Dimensions.WidthMax), p.displayWidth)
+
+		out, ok := p.output.(*strings.Builder)
+		if ok {
+			outString := out.String()
+			t.Log(outString)
+			assert.Contains(t, outString, "TestPrompt_Prompt/no_error")
+			assert.Contains(t, outString, "abc    def")
+		}
 	})
 }
 
@@ -293,7 +350,7 @@ func TestPrompt_SetFooterGenerator(t *testing.T) {
 	p.SetFooterGenerator(LineRuler(StyleLineNumbersEnabled.Color))
 	assert.NotNil(t, p.footerGenerator)
 	assert.Equal(t,
-		"\x1b[38;5;240;48;5;236m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\x1b[0m",
+		"\x1b[38;5;239;48;5;235m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\x1b[0m",
 		p.footerGenerator(80))
 }
 
@@ -313,7 +370,7 @@ func TestPrompt_SetHeaderGenerator(t *testing.T) {
 	p.SetHeaderGenerator(LineRuler(StyleLineNumbersEnabled.Color))
 	assert.NotNil(t, p.headerGenerator)
 	assert.Equal(t,
-		"\x1b[38;5;240;48;5;236m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\x1b[0m",
+		"\x1b[38;5;239;48;5;235m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\x1b[0m",
 		p.headerGenerator(80))
 }
 
