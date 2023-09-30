@@ -100,13 +100,7 @@ func TestPrompt_Prompt(t *testing.T) {
 		assert.True(t, errors.Is(err, ErrInvalidDimensions))
 	})
 
-	t.Run("input reader error", func(t *testing.T) {
-		chErrors := make(chan error, 1)
-		chKeyEvents := make(chan tea.KeyMsg, 1)
-		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
-
-		mc := gomock.NewController(t)
-		defer mc.Finish()
+	generateTestPromptWithMockReader := func(t *testing.T, ctx context.Context, mc *gomock.Controller, chErrors chan error, chKeyEvents chan tea.KeyMsg, chWindowSizeEvents chan tea.WindowSizeMsg) *prompt {
 		mockReader := mock_input.NewMockReader(mc)
 		mockReader.EXPECT().Begin(gomock.Any())
 		mockReader.EXPECT().Reset()
@@ -117,6 +111,18 @@ func TestPrompt_Prompt(t *testing.T) {
 
 		p := generateTestPrompt(t, ctx)
 		p.reader = mockReader
+		return p
+	}
+
+	t.Run("input reader error", func(t *testing.T) {
+		chErrors := make(chan error, 1)
+		chKeyEvents := make(chan tea.KeyMsg, 1)
+		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
+
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
 		go func() {
 			<-time.After(time.Second / 10) // some time for all goroutines to start
 			chErrors <- fmt.Errorf("test-error")
@@ -134,16 +140,8 @@ func TestPrompt_Prompt(t *testing.T) {
 
 		mc := gomock.NewController(t)
 		defer mc.Finish()
-		mockReader := mock_input.NewMockReader(mc)
-		mockReader.EXPECT().Begin(gomock.Any())
-		mockReader.EXPECT().Reset()
-		mockReader.EXPECT().Errors().AnyTimes().Return(chErrors)
-		mockReader.EXPECT().KeyEvents().AnyTimes().Return(chKeyEvents)
-		mockReader.EXPECT().WindowSizeEvents().AnyTimes().Return(chWindowSizeEvents)
-		mockReader.EXPECT().End()
 
-		p := generateTestPrompt(t, ctx)
-		p.reader = mockReader
+		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
 		go func() {
 			<-time.After(time.Second / 10) // some time for all goroutines to start
 			chKeyEvents <- tea.KeyMsg{Type: tea.KeyCtrlC}
@@ -161,16 +159,8 @@ func TestPrompt_Prompt(t *testing.T) {
 
 		mc := gomock.NewController(t)
 		defer mc.Finish()
-		mockReader := mock_input.NewMockReader(mc)
-		mockReader.EXPECT().Begin(gomock.Any())
-		mockReader.EXPECT().Reset()
-		mockReader.EXPECT().Errors().AnyTimes().Return(chErrors)
-		mockReader.EXPECT().KeyEvents().AnyTimes().Return(chKeyEvents)
-		mockReader.EXPECT().WindowSizeEvents().AnyTimes().Return(chWindowSizeEvents)
-		mockReader.EXPECT().End()
 
-		p := generateTestPrompt(t, ctx)
-		p.reader = mockReader
+		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
 		go func() {
 			<-time.After(time.Second / 10) // some time for all goroutines to start
 			chKeyEvents <- tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("abc\tdef")}
@@ -360,7 +350,7 @@ func TestPrompt_SetFooterGenerator(t *testing.T) {
 	p.SetFooterGenerator(LineRuler(StyleLineNumbersEnabled.Color))
 	assert.NotNil(t, p.footerGenerator)
 	assert.Equal(t,
-		"\x1b[38;5;240;48;5;236m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\x1b[0m",
+		"\x1b[38;5;239;48;5;235m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\x1b[0m",
 		p.footerGenerator(80))
 }
 
@@ -380,7 +370,7 @@ func TestPrompt_SetHeaderGenerator(t *testing.T) {
 	p.SetHeaderGenerator(LineRuler(StyleLineNumbersEnabled.Color))
 	assert.NotNil(t, p.headerGenerator)
 	assert.Equal(t,
-		"\x1b[38;5;240;48;5;236m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\x1b[0m",
+		"\x1b[38;5;239;48;5;235m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8\x1b[0m",
 		p.headerGenerator(80))
 }
 

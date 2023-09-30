@@ -185,8 +185,8 @@ var (
 	StyleLineNumbersEnabled = StyleLineNumbers{
 		Enabled: true,
 		Color: Color{
-			Foreground: termenv.ANSI256Color(240),
-			Background: termenv.ANSI256Color(236),
+			Foreground: termenv.ANSI256Color(239),
+			Background: termenv.ANSI256Color(235),
 		},
 		ZeroPrefixed: false,
 	}

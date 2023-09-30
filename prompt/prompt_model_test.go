@@ -90,7 +90,7 @@ func TestPrompt_updateModel(t *testing.T) {
 		p.buffer.InsertString(`select` + ` * from dual`)
 		p.updateModel(true)
 		expectedLines := []string{
-			"[TestPrompt_updateModel/simple_one-liner_with_line-numbers] \x1b[38;5;240;48;5;236m 1 \x1b[0m \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
+			"[TestPrompt_updateModel/simple_one-liner_with_line-numbers] \x1b[38;5;239;48;5;235m 1 \x1b[0m \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
 		}
 		compareModelLines(t, expectedLines, p.linesToRender)
 	})
@@ -109,11 +109,11 @@ func TestPrompt_updateModel(t *testing.T) {
 		p.buffer.InsertString(testInput)
 		p.updateModel(true)
 		expectedLines := []string{
-			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;240;48;5;236m 1 \x1b[0m \x1b[38;5;231mfoo\x1b[0m\x1b[38;5;231m",
-			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;240;48;5;236m 2 \x1b[0m \x1b[0m\x1b[38;5;231mbar\x1b[0m\x1b[38;5;231m",
-			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;240;48;5;236m 3 \x1b[0m \x1b[0m\x1b[38;5;231mbaz\x1b[0m\x1b[38;5;231m",
-			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;240;48;5;236m 4 \x1b[0m \x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
-			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;240;48;5;236m   \x1b[0m",
+			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m 06 \x1b[0m \x1b[0m\x1b[38;5;231mbaz\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
+			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m 07 \x1b[0m \x1b[0m\x1b[38;5;231mfoo\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
+			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m 08 \x1b[0m \x1b[0m\x1b[38;5;231mbar\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
+			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m 09 \x1b[0m \x1b[0m\x1b[38;5;231mbaz\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
+			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m 10 \x1b[0m \x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m                                           \x1b[38;5;237;48;5;233m█\x1b[0m",
 		}
 		compareModelLines(t, expectedLines, p.linesToRender)
 
@@ -121,11 +121,11 @@ func TestPrompt_updateModel(t *testing.T) {
 		p.buffer.InsertString(testInput)
 		p.updateModel(true)
 		expectedLines = []string{
-			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;240;48;5;236m 06 \x1b[0m \x1b[0m\x1b[38;5;231mbaz\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
-			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;240;48;5;236m 07 \x1b[0m \x1b[0m\x1b[38;5;231mfoo\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
-			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;240;48;5;236m 08 \x1b[0m \x1b[0m\x1b[38;5;231mbar\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
-			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;240;48;5;236m 09 \x1b[0m \x1b[0m\x1b[38;5;231mbaz\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
-			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;240;48;5;236m 10 \x1b[0m \x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m                                           \x1b[38;5;237;48;5;233m█\x1b[0m",
+			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] 1b[38;5;239;48;5;235m 06 \x1b[0m \x1b[0m\x1b[38;5;231mbaz\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
+			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] 1b[38;5;239;48;5;235m 07 \x1b[0m \x1b[0m\x1b[38;5;231mfoo\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
+			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] 1b[38;5;239;48;5;235m 08 \x1b[0m \x1b[0m\x1b[38;5;231mbar\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
+			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] 1b[38;5;239;48;5;235m 09 \x1b[0m \x1b[0m\x1b[38;5;231mbaz\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
+			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] 1b[38;5;239;48;5;235m 10 \x1b[0m \x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m                                           \x1b[38;5;237;48;5;233m█\x1b[0m",
 		}
 		compareModelLines(t, expectedLines, p.linesToRender)
 	})

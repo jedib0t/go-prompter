@@ -10,6 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	testReasonDebug = "test-debug"
+)
+
 func TestPrompt_renderView(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
@@ -28,9 +32,9 @@ func TestPrompt_renderView(t *testing.T) {
 	p.updateModel(true)
 	p.renderView(termenv.NewOutput(&output), "test")
 	expectedLines := []string{
-		"\x1b[2K\x1b[38;5;240;48;5;236m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
-		"\x1b[2K\x1b[38;5;240;48;5;236m 1 \x1b[0m This is a test\x1b[38;5;232;48;5;6m \x1b[0m",
-		"\x1b[2K\x1b[38;5;240;48;5;236m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
+		"\x1b[2K\x1b[38;5;239;48;5;235m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
+		"\x1b[2K\x1b[38;5;239;48;5;235m 1 \x1b[0m This is a test\x1b[38;5;232;48;5;6m \x1b[0m",
+		"\x1b[2K\x1b[38;5;239;48;5;235m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
 		"",
 	}
 	compareModelLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
@@ -41,9 +45,9 @@ func TestPrompt_renderView(t *testing.T) {
 	p.updateModel(true)
 	p.renderView(termenv.NewOutput(&output), "test")
 	expectedLines = []string{
-		"\x1b[3A\x1b[1B\x1b[2K\x1b[38;5;240;48;5;236m 1 \x1b[0m This is a test",
-		"\x1b[2K\x1b[38;5;240;48;5;236m 2 \x1b[0m and this is not a test\x1b[38;5;232;48;5;6m \x1b[0m",
-		"\x1b[2K\x1b[38;5;240;48;5;236m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
+		"\x1b[3A\x1b[1B\x1b[2K\x1b[38;5;239;48;5;235m 1 \x1b[0m This is a test",
+		"\x1b[2K\x1b[38;5;239;48;5;235m 2 \x1b[0m and this is not a test\x1b[38;5;232;48;5;6m \x1b[0m",
+		"\x1b[2K\x1b[38;5;239;48;5;235m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
 		"",
 	}
 	compareModelLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
@@ -120,42 +124,37 @@ func TestPrompt_renderView(t *testing.T) {
 	p.linesRendered = make([]string, 0)
 	p.setDebugData("foo", "bar")
 	p.updateModel(true)
-	p.renderView(termenv.NewOutput(&output), "test-debug")
+	p.renderView(termenv.NewOutput(&output), testReasonDebug)
 	actualLines := strings.Split(output.String(), "\n")
 	assert.Len(t, actualLines, 5, testSubtitle)
-	assert.Contains(t, "foo=bar", actualLines[4], testSubtitle)
-	assert.Contains(t, "reason=test-debug", actualLines[4], testSubtitle)
-	assert.Contains(t, "time=", actualLines[4], testSubtitle)
+	assert.Contains(t, actualLines[3], p.debugDataAsString(), testSubtitle)
+	assert.Contains(t, actualLines[3], "time=", testSubtitle)
 
 	testSubtitle = "Render the diff with debug mode"
 	output.Reset()
 	p.setDebugData("bar", "baz")
 	p.updateModel(true)
-	p.renderView(termenv.NewOutput(&output), "test-debug")
+	p.renderView(termenv.NewOutput(&output), testReasonDebug)
 	actualLines = strings.Split(output.String(), "\n")
 	assert.Len(t, actualLines, 2, testSubtitle)
-	assert.Contains(t, "foo=bar", actualLines[1], testSubtitle)
-	assert.Contains(t, "bar=baz", actualLines[1], testSubtitle)
-	assert.Contains(t, "reason=test-debug", actualLines[1], testSubtitle)
-	assert.Contains(t, "time=", actualLines[1], testSubtitle)
+	assert.Contains(t, actualLines[0], p.debugDataAsString(), testSubtitle)
+	assert.Contains(t, actualLines[0], "time=", testSubtitle)
 
 	testSubtitle = "Paused"
 	output.Reset()
 	p.pauseRender()
 	p.setDebugData("baz", "foo")
 	p.updateModel(true)
-	p.renderView(termenv.NewOutput(&output), "test-debug")
+	p.renderView(termenv.NewOutput(&output), testReasonDebug)
 	assert.Equal(t, "", output.String(), testSubtitle)
 
 	testSubtitle = "Resumed"
 	output.Reset()
 	p.resumeRender()
 	p.updateModel(true)
-	p.renderView(termenv.NewOutput(&output), "test-debug")
+	p.renderView(termenv.NewOutput(&output), testReasonDebug)
+	actualLines = strings.Split(output.String(), "\n")
 	assert.Len(t, actualLines, 2, testSubtitle)
-	assert.Contains(t, "foo=bar", actualLines[1], testSubtitle)
-	assert.Contains(t, "bar=baz", actualLines[1], testSubtitle)
-	assert.Contains(t, "baz=foo", actualLines[1], testSubtitle)
-	assert.Contains(t, "reason=test-debug", actualLines[1], testSubtitle)
-	assert.Contains(t, "time=", actualLines[1], testSubtitle)
+	assert.Contains(t, actualLines[0], p.debugDataAsString(), testSubtitle)
+	assert.Contains(t, actualLines[0], "time=", testSubtitle)
 }
