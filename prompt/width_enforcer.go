@@ -44,7 +44,7 @@ func WidthEnforcerDefault(str string, maxLen int) string {
 
 		if r == escSeqStop {
 			inEscSeq = false
-			if string(escSeq) == escSeqReset {
+			if strings.HasSuffix(string(escSeq), escSeqReset) {
 				escSeq = make([]rune, 0)
 			}
 		}

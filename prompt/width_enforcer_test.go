@@ -30,7 +30,9 @@ func BenchmarkWidthEnforcerDefault(b *testing.B) {
 
 func TestWidthEnforcerDefault(t *testing.T) {
 	in := "Ghosts of the Deep"
-	out := WidthEnforcerDefault(in, 5)
+	out := WidthEnforcerDefault(in, 0)
+	assert.Equal(t, out, out)
+	out = WidthEnforcerDefault(in, 5)
 	expected := "Ghost\ns of \nthe D\neep"
 	assert.Equal(t, expected, out)
 

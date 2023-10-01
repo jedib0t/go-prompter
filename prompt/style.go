@@ -161,9 +161,6 @@ func (sd StyleDimensions) validate() error {
 		return fmt.Errorf("%w: width-min [%d] cannot be greater than width-max [%d]",
 			ErrInvalidDimensions, sd.WidthMin, sd.WidthMax)
 	}
-	if sd.WidthMax < 0 {
-		sd.WidthMax = 0
-	}
 	return nil
 }
 
