@@ -9,7 +9,11 @@ import (
 )
 
 func Test_calculateViewportRange(t *testing.T) {
-	start, stop := calculateViewportRange(5, -1, 5)
+	start, stop := calculateViewportRange(5, -1, -1)
+	assert.Equal(t, 0, start)
+	assert.Equal(t, 4, stop)
+
+	start, stop = calculateViewportRange(5, -1, 5)
 	assert.Equal(t, 0, start)
 	assert.Equal(t, 4, stop)
 
@@ -66,35 +70,77 @@ func Test_clampValue(t *testing.T) {
 	assert.Equal(t, 5, clampValue(6, 0, 5))
 }
 
-func Test_insertCursor(t *testing.T) {
-	input := "\x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m"
+func Test_clampValueAllowZero(t *testing.T) {
+	assert.Equal(t, 0, clampValueAllowZero(0, 5, 10))
 
-	expectedOutput := "\x1b[38;5;81m\x1b[0m\x1b[38;5;232;48;5;6ms\x1b[0m\x1b[38;5;81melect\x1b[0m\x1b[38;5;231m"
-	output := insertCursor(input, 0, StyleCursorDefault.Color)
+	assert.Equal(t, 5, clampValueAllowZero(3, 5, 10))
+	assert.Equal(t, 5, clampValueAllowZero(5, 5, 10))
+	assert.Equal(t, 7, clampValueAllowZero(7, 5, 10))
+	assert.Equal(t, 10, clampValueAllowZero(10, 5, 10))
+	assert.Equal(t, 10, clampValueAllowZero(12, 5, 10))
+
+	assert.Equal(t, 3, clampValueAllowZero(3, 0, 0))
+	assert.Equal(t, 5, clampValueAllowZero(3, 5, 0))
+	assert.Equal(t, 5, clampValueAllowZero(6, 0, 5))
+}
+
+func Benchmark_insertCursor(b *testing.B) {
+	colorContent1 := Color{Foreground: termenv.ANSI256Color(81), Background: termenv.ANSI256Color(0)}
+	colorCursor := StyleCursorDefault.Color
+
+	input := colorContent1.Sprint("select")
+	expectedOutput := colorCursor.Sprint("s") +
+		colorContent1.Sprint("elect")
+	output := insertCursor(input, 0, colorCursor)
+	assert.Equal(b, expectedOutput, output)
+
+	for idx := 0; idx < b.N; idx++ {
+		insertCursor(input, 0, colorCursor)
+	}
+}
+
+func Test_insertCursor(t *testing.T) {
+	colorContent1 := Color{Foreground: termenv.ANSI256Color(81), Background: termenv.ANSI256Color(0)}
+	colorContent2 := Color{Foreground: termenv.ANSI256Color(82), Background: termenv.ANSI256Color(0)}
+	colorCursor := StyleCursorDefault.Color
+
+	input := "select"
+	expectedOutput := colorCursor.Sprint("s") + "elect"
+	output := insertCursor(input, 0, colorCursor)
 	assert.Equal(t, expectedOutput, output)
 
-	expectedOutput = "\x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m\x1b[38;5;232;48;5;6m \x1b[0m"
-	output = insertCursor(input, 10, StyleCursorDefault.Color)
+	input = colorContent1.Sprint("select")
+	expectedOutput = colorCursor.Sprint("s") +
+		colorContent1.Sprint("elect")
+	output = insertCursor(input, 0, colorCursor)
+	assert.Equal(t, expectedOutput, output)
+
+	input = colorContent1.Sprint("select")
+	expectedOutput = colorContent1.Sprint("select") +
+		colorCursor.Sprint(" ")
+	output = insertCursor(input, 10, colorCursor)
+	assert.Equal(t, expectedOutput, output)
+
+	input = colorContent1.Sprint("select") +
+		colorContent2.Sprint(" ") +
+		colorContent1.Sprint("foo")
+	expectedOutput = colorContent1.Sprint("select") +
+		colorContent2.Sprint(" ") +
+		colorContent1.Sprint("f") +
+		colorCursor.Sprint("o") +
+		colorContent1.Sprint("o")
+	output = insertCursor(input, 8, colorCursor)
 	assert.Equal(t, expectedOutput, output)
 }
 
 func Test_overwriteContent(t *testing.T) {
-	colorContent := Color{
-		Foreground: termenv.ANSI256Color(0),
-		Background: termenv.ANSI256Color(12),
-	}
-	colorContent2 := Color{
-		Foreground: termenv.ANSI256Color(0),
-		Background: termenv.ANSI256Color(22),
-	}
-	colorNewContent := Color{
-		Foreground: termenv.ANSI256Color(0),
-		Background: termenv.ANSI256Color(11),
-	}
+	colorContent1 := Color{Foreground: termenv.ANSI256Color(0), Background: termenv.ANSI256Color(12)}
+	colorContent2 := Color{Foreground: termenv.ANSI256Color(0), Background: termenv.ANSI256Color(22)}
+	colorContentNew := Color{Foreground: termenv.ANSI256Color(0), Background: termenv.ANSI256Color(11)}
 
 	t.Run("new content smaller than input", func(t *testing.T) {
-		input := colorContent.Sprint("Ghost")
-		newContent := colorNewContent.Sprint("--")
+		input := colorContent1.Sprint("Ghost")
+		newContent := colorContentNew.Sprint("--")
 		insertIdx := 2
 		expectedOutput := "\x1b[38;5;0;48;5;12mGh\x1b[0m\x1b[38;5;0;48;5;11m--\x1b[0m\x1b[38;5;0;48;5;12mt\x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 80)
@@ -102,8 +148,8 @@ func Test_overwriteContent(t *testing.T) {
 	})
 
 	t.Run("new content smaller than input with 2 colors", func(t *testing.T) {
-		input := colorContent.Sprint("Gho") + colorContent2.Sprint("st")
-		newContent := colorNewContent.Sprint("--")
+		input := colorContent1.Sprint("Gho") + colorContent2.Sprint("st")
+		newContent := colorContentNew.Sprint("--")
 		insertIdx := 2
 		expectedOutput := "\x1b[38;5;0;48;5;12mGh\x1b[0m\x1b[38;5;0;48;5;11m--\x1b[0m\x1b[38;5;0;48;5;22mt\x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 80)
@@ -111,8 +157,8 @@ func Test_overwriteContent(t *testing.T) {
 	})
 
 	t.Run("new content longer than input", func(t *testing.T) {
-		input := colorContent.Sprint("Ghost")
-		newContent := colorNewContent.Sprint("----- foo -----")
+		input := colorContent1.Sprint("Ghost")
+		newContent := colorContentNew.Sprint("----- foo -----")
 		insertIdx := 2
 		expectedOutput := "\x1b[38;5;0;48;5;12mGh\x1b[0m\x1b[38;5;0;48;5;11m----- foo -----\x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 80)
@@ -120,8 +166,8 @@ func Test_overwriteContent(t *testing.T) {
 	})
 
 	t.Run("new content beyond input", func(t *testing.T) {
-		input := colorContent.Sprint("Ghost")
-		newContent := colorNewContent.Sprint("----- foo -----")
+		input := colorContent1.Sprint("Ghost")
+		newContent := colorContentNew.Sprint("----- foo -----")
 		insertIdx := 25
 		expectedOutput := "\x1b[38;5;0;48;5;12mGhost\x1b[0m                    \x1b[38;5;0;48;5;11m----- foo -----\x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 80)
@@ -130,7 +176,7 @@ func Test_overwriteContent(t *testing.T) {
 
 	t.Run("new content beyond input 2", func(t *testing.T) {
 		input := "\x1b[38;5;237;48;5;233m 2 \x1b[0m   \x1b[0m\x1b[38;5;231m(\x1b[0m\x1b[38;5;186m'Arya'\x1b[0m\x1b[38;5;231m,\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;186m'Stark'\x1b[0m\x1b[38;5;231m,\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;141m3000\x1b[0m\x1b[38;5;231m),\x1b[0m"
-		newContent := colorNewContent.Sprint("values")
+		newContent := colorContentNew.Sprint("values")
 		insertIdx := 58
 		expectedOutput := "\x1b[38;5;237;48;5;233m 2 \x1b[0m   \x1b[0m\x1b[38;5;231m(\x1b[0m\x1b[38;5;186m'Arya'\x1b[0m\x1b[38;5;231m,\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;186m'Stark'\x1b[0m\x1b[38;5;231m,\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;141m3000\x1b[0m\x1b[38;5;231m),\x1b[0m                            \x1b[38;5;0;48;5;11mvalues\x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 80)
@@ -138,17 +184,17 @@ func Test_overwriteContent(t *testing.T) {
 	})
 
 	t.Run("new content needs to be moved left", func(t *testing.T) {
-		input := colorContent.Sprint("Ghost")
-		newContent := colorNewContent.Sprint("----- foo -----")
+		input := colorContent1.Sprint("Ghost")
+		newContent := colorContentNew.Sprint("----- foo -----")
 		insertIdx := 2
-		expectedOutput := "\x1b[38;5;0;48;5;12mGh\x1b[0m\x1b[38;5;0;48;5;11m----- foo -----\x1b[0m"
-		output := overwriteContents(input, newContent, insertIdx, 17)
+		expectedOutput := "\x1b[38;5;0;48;5;12mG\x1b[0m\x1b[38;5;0;48;5;11m----- foo -----\x1b[0m"
+		output := overwriteContents(input, newContent, insertIdx, 16)
 		assert.Equal(t, expectedOutput, output, fmt.Sprintf("newContent=%s", newContent))
 	})
 
 	t.Run("new content needs to be moved left more", func(t *testing.T) {
-		input := colorContent.Sprint("Ghost")
-		newContent := colorNewContent.Sprint("----- foo -----")
+		input := colorContent1.Sprint("Ghost")
+		newContent := colorContentNew.Sprint("----- foo -----")
 		insertIdx := 2
 		expectedOutput := "\x1b[38;5;0;48;5;11m----- foo -----\x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 15)
@@ -156,8 +202,8 @@ func Test_overwriteContent(t *testing.T) {
 	})
 
 	t.Run("new content longer than display width", func(t *testing.T) {
-		input := colorContent.Sprint("Ghost")
-		newContent := colorNewContent.Sprint("----- foo -----")
+		input := colorContent1.Sprint("Ghost")
+		newContent := colorContentNew.Sprint("----- foo -----")
 		insertIdx := 2
 		expectedOutput := "\x1b[38;5;0;48;5;11m----- foo \x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 10)

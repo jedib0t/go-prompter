@@ -77,10 +77,10 @@ type prompt struct {
 	suggestionsMutex            sync.RWMutex
 	syntaxHighlighterCache      map[string][]string
 	syntaxHighlighterCacheMutex sync.RWMutex
+	timeAutoComplete            time.Duration
+	timeBufferGen               time.Duration
 	timeGen                     time.Duration
 	timeSyntaxGen               time.Duration
-	timeBufferGen               time.Duration
-	timeAutoComplete            time.Duration
 }
 
 // CursorLocation returns the current location of the cursor on the prompt.
