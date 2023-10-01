@@ -158,3 +158,35 @@ func TestPowerline_Render(t *testing.T) {
 		)
 	})
 }
+
+func TestPowerline_hasChangesLeft(t *testing.T) {
+	p := Powerline{}
+	assert.False(t, p.hasChangesLeft())
+
+	seg := Segment{}
+	p.left = append(p.left, &seg)
+	assert.False(t, p.hasChangesLeft())
+	seg.hasChanges = true
+	assert.True(t, p.hasChangesLeft())
+	seg.hasChanges = false
+	assert.False(t, p.hasChangesLeft())
+
+	p.hasChanges = true
+	assert.True(t, p.hasChangesLeft())
+}
+
+func TestPowerline_hasChangesRight(t *testing.T) {
+	p := Powerline{}
+	assert.False(t, p.hasChangesRight())
+
+	seg := Segment{}
+	p.right = append(p.right, &seg)
+	assert.False(t, p.hasChangesRight())
+	seg.hasChanges = true
+	assert.True(t, p.hasChangesRight())
+	seg.hasChanges = false
+	assert.False(t, p.hasChangesRight())
+
+	p.hasChanges = true
+	assert.True(t, p.hasChangesRight())
+}
