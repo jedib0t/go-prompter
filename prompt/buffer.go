@@ -498,29 +498,20 @@ func (b *buffer) MoveWordLeft(locked ...bool) {
 		b.cursor.Column = len(b.getCurrentLine())
 	}
 
-	// move line by line until previous word is found
+	// move column by column until previous word is found
 	foundWord := false
-	idxStartingLine := b.cursor.Line
-	for lineIdx := b.cursor.Line; lineIdx >= 0; lineIdx-- {
-		b.cursor.Line = lineIdx
-		b.linesChanged.Mark(b.cursor.Line)
-		if lineIdx != idxStartingLine {
-			b.cursor.Column = len(b.getCurrentLine())
+	line := b.getCurrentLine()
+	for colIdx := b.cursor.Column - 1; colIdx >= 0; colIdx-- {
+		b.cursor.Column = colIdx
+		isPoW := isPartOfWord(line[colIdx])
+		if foundWord && (!isPoW || colIdx == 0) {
+			if !isPoW {
+				b.cursor.Column++
+			}
+			return
 		}
-
-		line := b.lines[lineIdx]
-		for colIdx := b.cursor.Column - 1; colIdx >= 0; colIdx-- {
-			b.cursor.Column = colIdx
-			isPartOfWord := isPartOfWord(line[colIdx])
-			if foundWord && (!isPartOfWord || colIdx == 0) {
-				if !isPartOfWord {
-					b.cursor.Column++
-				}
-				return
-			}
-			if isPartOfWord {
-				foundWord = true
-			}
+		if isPoW {
+			foundWord = true
 		}
 	}
 }
@@ -535,8 +526,7 @@ func (b *buffer) MoveWordRight(locked ...bool) {
 	// if cursor is on the last column, move to the next line
 	foundBreak := false
 	idxStartingLine := b.cursor.Line
-	line := b.getCurrentLine()
-	if b.cursor.Column == len(line) {
+	if b.cursor.Column == len(b.getCurrentLine()) {
 		// if already on the last line, there is nothing to do
 		if b.cursor.Line == len(b.lines)-1 {
 			return
@@ -559,11 +549,11 @@ func (b *buffer) MoveWordRight(locked ...bool) {
 		line := b.lines[lineIdx]
 		for colIdx := b.cursor.Column; colIdx < len(line); colIdx++ {
 			b.cursor.Column = colIdx
-			isPartOfWord := isPartOfWord(line[b.cursor.Column])
-			if isPartOfWord && foundBreak {
+			isPoW := isPartOfWord(line[b.cursor.Column])
+			if isPoW && foundBreak {
 				return
 			}
-			if !isPartOfWord {
+			if !isPoW {
 				foundBreak = true
 			}
 		}
