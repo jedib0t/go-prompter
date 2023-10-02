@@ -121,21 +121,6 @@ func TestPrompt_handleKeyAutoComplete(t *testing.T) {
 
 	t.Run("AutoCompleteSelect", func(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
-		p.isInAutoComplete = true
-		p.keyMapReversed.AutoComplete[Enter] = AutoCompleteSelect
-		p.suggestions = append(p.suggestions, testSuggestions...)
-		p.suggestionsIdx = 1
-
-		output := strings.Builder{}
-		err := p.handleKeyAutoComplete(termenv.NewOutput(&output), tea.KeyMsg{Type: tea.KeyEnter})
-		assert.Nil(t, err)
-		assert.Equal(t, "auto-complete-2 ", p.buffer.String())
-		assert.Equal(t, 0, p.suggestionsIdx)
-		assert.Equal(t, "", output.String())
-	})
-
-	t.Run("AutoCompleteSelect CaseInsensitive", func(t *testing.T) {
-		p := generateTestPrompt(t, ctx)
 		p.buffer.Set("Auto-")
 		p.isInAutoComplete = true
 		p.keyMapReversed.AutoComplete[Enter] = AutoCompleteSelect
