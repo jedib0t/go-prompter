@@ -118,12 +118,9 @@ func TestPrompt_Prompt(t *testing.T) {
 		defer cancel()
 
 		chErrors := make(chan error, 1)
-		chKeyEvents := make(chan tea.KeyMsg, 1)
-		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
-
 		mc := gomock.NewController(t)
 		defer mc.Finish()
-		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
+		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, nil, nil)
 		go func() {
 			<-time.After(time.Second / 10) // some time for all goroutines to start
 			chErrors <- fmt.Errorf("test-error")
@@ -138,13 +135,10 @@ func TestPrompt_Prompt(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
-		chErrors := make(chan error, 1)
 		chKeyEvents := make(chan tea.KeyMsg, 1)
-		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
-
 		mc := gomock.NewController(t)
 		defer mc.Finish()
-		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
+		p := generateTestPromptWithMockReader(t, ctx, mc, nil, chKeyEvents, nil)
 		go func() {
 			<-time.After(time.Second / 10) // some time for all goroutines to start
 			chKeyEvents <- tea.KeyMsg{Type: tea.KeyCtrlC}
@@ -159,13 +153,9 @@ func TestPrompt_Prompt(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
-		chErrors := make(chan error, 1)
-		chKeyEvents := make(chan tea.KeyMsg, 1)
-		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
-
 		mc := gomock.NewController(t)
 		defer mc.Finish()
-		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
+		p := generateTestPromptWithMockReader(t, ctx, mc, nil, nil, nil)
 		go func() {
 			<-time.After(time.Second / 10) // some time for all goroutines to start
 			cancel()
@@ -183,7 +173,6 @@ func TestPrompt_Prompt(t *testing.T) {
 		chErrors := make(chan error, 1)
 		chKeyEvents := make(chan tea.KeyMsg, 1)
 		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
-
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
