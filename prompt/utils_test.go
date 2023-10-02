@@ -137,6 +137,7 @@ func Test_overwriteContent(t *testing.T) {
 	colorContent1 := Color{Foreground: termenv.ANSI256Color(0), Background: termenv.ANSI256Color(12)}
 	colorContent2 := Color{Foreground: termenv.ANSI256Color(0), Background: termenv.ANSI256Color(22)}
 	colorContentNew := Color{Foreground: termenv.ANSI256Color(0), Background: termenv.ANSI256Color(11)}
+	strNewContent := "----- foo -----"
 
 	t.Run("new content smaller than input", func(t *testing.T) {
 		input := colorContent1.Sprint("Ghost")
@@ -158,7 +159,7 @@ func Test_overwriteContent(t *testing.T) {
 
 	t.Run("new content longer than input", func(t *testing.T) {
 		input := colorContent1.Sprint("Ghost")
-		newContent := colorContentNew.Sprint("----- foo -----")
+		newContent := colorContentNew.Sprint(strNewContent)
 		insertIdx := 2
 		expectedOutput := "\x1b[38;5;0;48;5;12mGh\x1b[0m\x1b[38;5;0;48;5;11m----- foo -----\x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 80)
@@ -167,7 +168,7 @@ func Test_overwriteContent(t *testing.T) {
 
 	t.Run("new content beyond input", func(t *testing.T) {
 		input := colorContent1.Sprint("Ghost")
-		newContent := colorContentNew.Sprint("----- foo -----")
+		newContent := colorContentNew.Sprint(strNewContent)
 		insertIdx := 25
 		expectedOutput := "\x1b[38;5;0;48;5;12mGhost\x1b[0m                    \x1b[38;5;0;48;5;11m----- foo -----\x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 80)
@@ -185,7 +186,7 @@ func Test_overwriteContent(t *testing.T) {
 
 	t.Run("new content needs to be moved left", func(t *testing.T) {
 		input := colorContent1.Sprint("Ghost")
-		newContent := colorContentNew.Sprint("----- foo -----")
+		newContent := colorContentNew.Sprint(strNewContent)
 		insertIdx := 2
 		expectedOutput := "\x1b[38;5;0;48;5;12mG\x1b[0m\x1b[38;5;0;48;5;11m----- foo -----\x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 16)
@@ -194,7 +195,7 @@ func Test_overwriteContent(t *testing.T) {
 
 	t.Run("new content needs to be moved left more", func(t *testing.T) {
 		input := colorContent1.Sprint("Ghost")
-		newContent := colorContentNew.Sprint("----- foo -----")
+		newContent := colorContentNew.Sprint(strNewContent)
 		insertIdx := 2
 		expectedOutput := "\x1b[38;5;0;48;5;11m----- foo -----\x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 15)
@@ -203,7 +204,7 @@ func Test_overwriteContent(t *testing.T) {
 
 	t.Run("new content longer than display width", func(t *testing.T) {
 		input := colorContent1.Sprint("Ghost")
-		newContent := colorContentNew.Sprint("----- foo -----")
+		newContent := colorContentNew.Sprint(strNewContent)
 		insertIdx := 2
 		expectedOutput := "\x1b[38;5;0;48;5;11m----- foo \x1b[0m"
 		output := overwriteContents(input, newContent, insertIdx, 10)
