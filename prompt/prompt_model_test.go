@@ -69,28 +69,57 @@ func TestPrompt_updateModel(t *testing.T) {
 
 	t.Run("simple one-liner", func(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
-		p.SetAutoCompleter(AutoCompleteSQLKeywords())
-		p.SetSyntaxHighlighter(syntaxHighlighter)
 
 		p.buffer.InsertString(`select` + ` * from dual`)
 		p.updateModel(true)
 		expectedLines := []string{
-			"[TestPrompt_updateModel/simple_one-liner] \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
+			"[TestPrompt_updateModel/simple_one-liner] select * from dual\x1b[38;5;232;48;5;6m \x1b[0m",
+		}
+		compareLines(t, expectedLines, p.linesToRender)
+	})
+
+	t.Run("simple one-liner with header and footer", func(t *testing.T) {
+		p := generateTestPrompt(t, ctx)
+		p.SetHeader("header")
+		p.SetFooter("footer")
+		p.updateHeaderAndFooter()
+
+		p.buffer.InsertString(`select` + ` * from dual`)
+		p.updateModel(true)
+		expectedLines := []string{
+			"header",
+			"[TestPrompt_updateModel/simple_one-liner_with_header_and_footer] select * from dual\x1b[38;5;232;48;5;6m \x1b[0m",
+			"footer",
 		}
 		compareLines(t, expectedLines, p.linesToRender)
 	})
 
 	t.Run("simple one-liner with line-numbers", func(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
-		p.SetAutoCompleter(AutoCompleteSQLKeywords())
-		p.SetSyntaxHighlighter(syntaxHighlighter)
 		p.Style().LineNumbers = StyleLineNumbersEnabled
 		p.init(ctx)
 
 		p.buffer.InsertString(`select` + ` * from dual`)
 		p.updateModel(true)
 		expectedLines := []string{
-			"[TestPrompt_updateModel/simple_one-liner_with_line-numbers] \x1b[38;5;239;48;5;235m 1 \x1b[0m \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
+			"[TestPrompt_updateModel/simple_one-liner_with_line-numbers] \x1b[38;5;239;48;5;235m 1 \x1b[0m select * from dual\x1b[38;5;232;48;5;6m \x1b[0m",
+		}
+		compareLines(t, expectedLines, p.linesToRender)
+	})
+
+	t.Run("simple one-liner with line-numbers and short-display-width", func(t *testing.T) {
+		p := generateTestPrompt(t, ctx)
+		p.Style().LineNumbers = StyleLineNumbersEnabled
+		p.Style().Dimensions.WidthMin = 95
+		p.Style().Dimensions.WidthMax = 95
+		p.init(ctx)
+
+		p.buffer.InsertString(`select` + ` * from dual`)
+		p.updateModel(false)
+		expectedLines := []string{
+			"[TestPrompt_updateModel/simple_one-liner_with_line-numbers_and_short-display-width] \x1b[38;5;239;48;5;235m 1 \x1b[0m select ",
+			"[TestPrompt_updateModel/simple_one-liner_with_line-numbers_and_short-display-width] \x1b[38;5;239;48;5;235m   \x1b[0m * from ",
+			"[TestPrompt_updateModel/simple_one-liner_with_line-numbers_and_short-display-width] \x1b[38;5;239;48;5;235m   \x1b[0m dual",
 		}
 		compareLines(t, expectedLines, p.linesToRender)
 	})
@@ -126,6 +155,25 @@ func TestPrompt_updateModel(t *testing.T) {
 			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m 08 \x1b[0m \x1b[0m\x1b[38;5;231mbar\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
 			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m 09 \x1b[0m \x1b[0m\x1b[38;5;231mbaz\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
 			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m 10 \x1b[0m \x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m                                           \x1b[38;5;237;48;5;233m█\x1b[0m",
+		}
+		compareLines(t, expectedLines, p.linesToRender)
+	})
+
+	t.Run("multi-liner without line-numbers", func(t *testing.T) {
+		p := generateTestPrompt(t, ctx)
+		p.Style().Dimensions.HeightMin = 5
+		p.Style().Dimensions.HeightMax = 5
+		p.init(ctx)
+
+		testInput := "food\nbard\nbazd\n"
+		p.buffer.InsertString(testInput)
+		p.updateModel(true)
+		expectedLines := []string{
+			"[TestPrompt_updateModel/multi-liner_without_line-numbers] food",
+			"[TestPrompt_updateModel/multi-liner_without_line-numbers] bard",
+			"[TestPrompt_updateModel/multi-liner_without_line-numbers] bazd",
+			"[TestPrompt_updateModel/multi-liner_without_line-numbers] \x1b[38;5;232;48;5;6m \x1b[0m",
+			"",
 		}
 		compareLines(t, expectedLines, p.linesToRender)
 	})

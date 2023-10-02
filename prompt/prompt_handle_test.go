@@ -134,6 +134,22 @@ func TestPrompt_handleKeyAutoComplete(t *testing.T) {
 		assert.Equal(t, "", output.String())
 	})
 
+	t.Run("AutoCompleteSelect CaseInsensitive", func(t *testing.T) {
+		p := generateTestPrompt(t, ctx)
+		p.buffer.Set("Auto-")
+		p.isInAutoComplete = true
+		p.keyMapReversed.AutoComplete[Enter] = AutoCompleteSelect
+		p.suggestions = append(p.suggestions, testSuggestions...)
+		p.suggestionsIdx = 1
+
+		output := strings.Builder{}
+		err := p.handleKeyAutoComplete(termenv.NewOutput(&output), tea.KeyMsg{Type: tea.KeyEnter})
+		assert.Nil(t, err)
+		assert.Equal(t, "Auto-complete-2 ", p.buffer.String())
+		assert.Equal(t, 0, p.suggestionsIdx)
+		assert.Equal(t, "", output.String())
+	})
+
 	t.Run("fall-through", func(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.isInAutoComplete = true
@@ -143,6 +159,16 @@ func TestPrompt_handleKeyAutoComplete(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, "a", p.buffer.String())
 		assert.Equal(t, "", output.String())
+	})
+
+	t.Run("unknown action", func(t *testing.T) {
+		p := generateTestPrompt(t, ctx)
+		p.isInAutoComplete = true
+		p.keyMapReversed.AutoComplete[Enter] = Action("foo")
+
+		output := strings.Builder{}
+		err := p.handleKeyAutoComplete(termenv.NewOutput(&output), tea.KeyMsg{Type: tea.KeyEnter})
+		assert.Nil(t, err)
 	})
 }
 
@@ -175,6 +201,16 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, ErrAborted, err)
 		assert.Empty(t, p.buffer.String())
+	})
+
+	t.Run("AutoComplete", func(t *testing.T) {
+		p := generateTestPrompt(t, ctx)
+		p.keyMapReversed.Insert[Enter] = AutoComplete
+
+		output := strings.Builder{}
+		err := p.handleKeyInsert(termenv.NewOutput(&output), tea.KeyMsg{Type: tea.KeyEnter})
+		assert.Nil(t, err)
+		assert.True(t, p.forcedAutoComplete())
 	})
 
 	t.Run("DeleteCharCurrent", func(t *testing.T) {
@@ -401,7 +437,7 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 		assert.Equal(t, CursorLocation{Line: 1, Column: 9}, p.buffer.cursor)
 	})
 
-	t.Run("Terminate History", func(t *testing.T) {
+	t.Run("Terminate History Exec", func(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.SetHistory(testHistoryCommands)
 		p.keyMapReversed.Insert[Enter] = Terminate
@@ -412,6 +448,21 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, testHistoryCommands[0].Command, p.buffer.String())
 		assert.True(t, p.buffer.IsDone())
+		assert.Contains(t, p.debugDataAsString(), "reason=hist.exec")
+	})
+
+	t.Run("Terminate History List", func(t *testing.T) {
+		p := generateTestPrompt(t, ctx)
+		p.SetHistory(testHistoryCommands)
+		p.keyMapReversed.Insert[Enter] = Terminate
+		p.buffer.InsertString("!!")
+
+		output := strings.Builder{}
+		err := p.handleKeyInsert(termenv.NewOutput(&output), tea.KeyMsg{Type: tea.KeyEnter})
+		assert.Nil(t, err)
+		assert.Equal(t, "", p.buffer.String())
+		assert.False(t, p.buffer.IsDone())
+		assert.Contains(t, p.debugDataAsString(), "reason=hist.list")
 	})
 
 	t.Run("Terminate Done", func(t *testing.T) {
@@ -467,5 +518,14 @@ func TestPrompt_handleKeyInsert(t *testing.T) {
 		err := p.handleKeyInsert(termenv.NewOutput(&output), tea.KeyMsg{Type: tea.KeyTab})
 		assert.Nil(t, err)
 		assert.Equal(t, p.style.TabString, p.buffer.String())
+	})
+
+	t.Run("unknown action", func(t *testing.T) {
+		p := generateTestPrompt(t, ctx)
+		p.keyMapReversed.Insert[Enter] = Action("foo")
+
+		output := strings.Builder{}
+		err := p.handleKeyInsert(termenv.NewOutput(&output), tea.KeyMsg{Type: tea.KeyEnter})
+		assert.Nil(t, err)
 	})
 }
