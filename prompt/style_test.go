@@ -41,7 +41,7 @@ func TestStyleScrollbar_Generate(t *testing.T) {
 		"",
 	}
 	actualLines, isVisible := s.Generate(5, 0, 5)
-	compareModelLines(t, expectedLines, actualLines, "Scrollbar None")
+	compareLines(t, expectedLines, actualLines, "Scrollbar None")
 	assert.False(t, isVisible)
 
 	expectedIndicatorEmpty := s.Color.Sprint(fmt.Sprintf("%c", s.IndicatorEmpty))
@@ -54,7 +54,7 @@ func TestStyleScrollbar_Generate(t *testing.T) {
 		expectedIndicatorEmpty,
 	}
 	actualLines, isVisible = s.Generate(20, 0, 5)
-	compareModelLines(t, expectedLines, actualLines, "Scrollbar @ 0%")
+	compareLines(t, expectedLines, actualLines, "Scrollbar @ 0%")
 	assert.True(t, isVisible)
 
 	expectedLines = []string{
@@ -65,7 +65,7 @@ func TestStyleScrollbar_Generate(t *testing.T) {
 		expectedIndicatorEmpty,
 	}
 	actualLines, isVisible = s.Generate(20, 5, 5)
-	compareModelLines(t, expectedLines, actualLines, "Scrollbar @ 25%")
+	compareLines(t, expectedLines, actualLines, "Scrollbar @ 25%")
 	assert.True(t, isVisible)
 
 	expectedLines = []string{
@@ -76,7 +76,7 @@ func TestStyleScrollbar_Generate(t *testing.T) {
 		expectedIndicatorEmpty,
 	}
 	actualLines, isVisible = s.Generate(20, 10, 5)
-	compareModelLines(t, expectedLines, actualLines, "Scrollbar @ 50%")
+	compareLines(t, expectedLines, actualLines, "Scrollbar @ 50%")
 	assert.True(t, isVisible)
 
 	expectedLines = []string{
@@ -87,7 +87,7 @@ func TestStyleScrollbar_Generate(t *testing.T) {
 		expectedIndicatorEmpty,
 	}
 	actualLines, isVisible = s.Generate(20, 15, 5)
-	compareModelLines(t, expectedLines, actualLines, "Scrollbar @ 75%")
+	compareLines(t, expectedLines, actualLines, "Scrollbar @ 75%")
 	assert.True(t, isVisible)
 
 	expectedLines = []string{
@@ -98,7 +98,7 @@ func TestStyleScrollbar_Generate(t *testing.T) {
 		expectedIndicator,
 	}
 	actualLines, isVisible = s.Generate(20, 20, 5)
-	compareModelLines(t, expectedLines, actualLines, "Scrollbar @ 100%")
+	compareLines(t, expectedLines, actualLines, "Scrollbar @ 100%")
 	assert.True(t, isVisible)
 
 	s.IndicatorEmpty = ' '
@@ -113,6 +113,6 @@ func TestStyleScrollbar_Generate(t *testing.T) {
 		expectedIndicator,
 	}
 	actualLines, isVisible = s.Generate(20, 20, 5)
-	compareModelLines(t, expectedLines, actualLines, "Scrollbar @ 100%")
+	compareLines(t, expectedLines, actualLines, "Scrollbar @ 100%")
 	assert.True(t, isVisible)
 }

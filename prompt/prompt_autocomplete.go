@@ -138,6 +138,11 @@ func printSuggestionsDropDown(suggestions []Suggestion, suggestionsIdx int, styl
 	}
 	lenValue = clampValue(lenValue, style.ValueLengthMin, style.ValueLengthMax)
 	lenHint = clampValueAllowZero(lenHint, style.HintLengthMin, style.HintLengthMax)
+	if suggestionsIdx < 0 {
+		suggestionsIdx = 0
+	} else if suggestionsIdx >= len(suggestions) {
+		suggestionsIdx = len(suggestions) - 1
+	}
 
 	// calculate the view port range (range of suggestions to display)
 	start, stop := calculateViewportRange(len(suggestions), suggestionsIdx, style.NumItems)

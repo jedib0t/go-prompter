@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func compareModelLines(t *testing.T, expected, actual []string, msg ...any) {
+func compareLines(t *testing.T, expected, actual []string, msg ...any) {
 	assert.Len(t, actual, len(expected))
 	assert.Equal(t, expected, actual)
 
@@ -77,7 +77,7 @@ func TestPrompt_updateModel(t *testing.T) {
 		expectedLines := []string{
 			"[TestPrompt_updateModel/simple_one-liner] \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
 		}
-		compareModelLines(t, expectedLines, p.linesToRender)
+		compareLines(t, expectedLines, p.linesToRender)
 	})
 
 	t.Run("simple one-liner with line-numbers", func(t *testing.T) {
@@ -92,7 +92,7 @@ func TestPrompt_updateModel(t *testing.T) {
 		expectedLines := []string{
 			"[TestPrompt_updateModel/simple_one-liner_with_line-numbers] \x1b[38;5;239;48;5;235m 1 \x1b[0m \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
 		}
-		compareModelLines(t, expectedLines, p.linesToRender)
+		compareLines(t, expectedLines, p.linesToRender)
 	})
 
 	t.Run("multi-liner with line-numbers and scroll-bar", func(t *testing.T) {
@@ -115,7 +115,7 @@ func TestPrompt_updateModel(t *testing.T) {
 			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m 4 \x1b[0m \x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
 			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m   \x1b[0m",
 		}
-		compareModelLines(t, expectedLines, p.linesToRender)
+		compareLines(t, expectedLines, p.linesToRender)
 
 		p.buffer.InsertString(testInput)
 		p.buffer.InsertString(testInput)
@@ -127,7 +127,7 @@ func TestPrompt_updateModel(t *testing.T) {
 			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m 09 \x1b[0m \x1b[0m\x1b[38;5;231mbaz\x1b[0m\x1b[38;5;231m                                         \x1b[38;5;237;48;5;233m░\x1b[0m",
 			"[TestPrompt_updateModel/multi-liner_with_line-numbers_and_scroll-bar] \x1b[38;5;239;48;5;235m 10 \x1b[0m \x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m                                           \x1b[38;5;237;48;5;233m█\x1b[0m",
 		}
-		compareModelLines(t, expectedLines, p.linesToRender)
+		compareLines(t, expectedLines, p.linesToRender)
 	})
 
 	t.Run("with auto-complete", func(t *testing.T) {
@@ -148,6 +148,6 @@ func TestPrompt_updateModel(t *testing.T) {
 			"[TestPrompt_updateModel/with_auto-complete]        \x1b[38;5;16;48;5;45m rownum    \x1b[0m\x1b[38;5;0;48;5;39m Number of Rows \x1b[0m",
 			"[TestPrompt_updateModel/with_auto-complete]        \x1b[38;5;16;48;5;45m rows      \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
 		}
-		compareModelLines(t, expectedLines, p.linesToRender)
+		compareLines(t, expectedLines, p.linesToRender)
 	})
 }
