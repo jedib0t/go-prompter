@@ -181,20 +181,23 @@ func TestPrompt_updateModel(t *testing.T) {
 	t.Run("with auto-complete", func(t *testing.T) {
 		p := generateTestPrompt(t, ctx)
 		p.SetAutoCompleter(AutoCompleteSQLKeywords())
-		p.SetSyntaxHighlighter(syntaxHighlighter)
+		p.SetAutoCompleterContextual(AutoCompleteSimple(testSuggestions, true))
+		p.Style().LineNumbers = StyleLineNumbersEnabled
+		p.Style().LineNumbers.Color = Color{}
 
 		p.buffer.InsertString(`select` + ` * from dual`)
 		p.buffer.Insert('\n')
 		p.buffer.InsertString(`  where row`)
+		p.forceAutoComplete(true)
 		p.updateSuggestionsInternal("", "", -1)
 		p.updateModel(true)
 		expectedLines := []string{
-			"[TestPrompt_updateModel/with_auto-complete] \x1b[38;5;81mselect\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;197m*\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mfrom\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;231mdual\x1b[0m\x1b[38;5;231m",
-			"[TestPrompt_updateModel/with_auto-complete]   \x1b[0m\x1b[38;5;81mwhere\x1b[0m\x1b[38;5;231m \x1b[0m\x1b[38;5;81mrow\x1b[0m\x1b[38;5;232;48;5;6m \x1b[0m",
-			"[TestPrompt_updateModel/with_auto-complete]        \x1b[38;5;16;48;5;214m row       \x1b[0m\x1b[38;5;16;48;5;208m                \x1b[0m",
-			"[TestPrompt_updateModel/with_auto-complete]        \x1b[38;5;16;48;5;45m row_count \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
-			"[TestPrompt_updateModel/with_auto-complete]        \x1b[38;5;16;48;5;45m rownum    \x1b[0m\x1b[38;5;0;48;5;39m Number of Rows \x1b[0m",
-			"[TestPrompt_updateModel/with_auto-complete]        \x1b[38;5;16;48;5;45m rows      \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
+			"[TestPrompt_updateModel/with_auto-complete]  1  select * from dual",
+			"[TestPrompt_updateModel/with_auto-complete]  2    where row\x1b[38;5;232;48;5;6m \x1b[0m",
+			"[TestPrompt_updateModel/with_auto-complete]            \x1b[38;5;16;48;5;214m row       \x1b[0m\x1b[38;5;16;48;5;208m                \x1b[0m",
+			"[TestPrompt_updateModel/with_auto-complete]            \x1b[38;5;16;48;5;45m row_count \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
+			"[TestPrompt_updateModel/with_auto-complete]            \x1b[38;5;16;48;5;45m rownum    \x1b[0m\x1b[38;5;0;48;5;39m Number of Rows \x1b[0m",
+			"[TestPrompt_updateModel/with_auto-complete]            \x1b[38;5;16;48;5;45m rows      \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
 		}
 		compareLines(t, expectedLines, p.linesToRender)
 	})

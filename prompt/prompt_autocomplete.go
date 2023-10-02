@@ -59,10 +59,9 @@ func (p *prompt) updateSuggestions(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-tick:
-			if p.isRenderPaused() {
-				continue
+			if !p.isRenderPaused() {
+				lastLine, lastWord, lastIdx = p.updateSuggestionsInternal(lastLine, lastWord, lastIdx)
 			}
-			lastLine, lastWord, lastIdx = p.updateSuggestionsInternal(lastLine, lastWord, lastIdx)
 		}
 	}
 }
