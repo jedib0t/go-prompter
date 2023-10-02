@@ -28,13 +28,14 @@ func SyntaxHighlighterChroma(language, formatter, style string) (SyntaxHighlight
 	s := styles.Get(style)
 
 	return func(input string) string {
+		output := input
 		if iterator, err := l.Tokenise(nil, input); err == nil {
-			rsp := strings.Builder{}
-			if err := f.Format(&rsp, s, iterator); err == nil {
-				return rsp.String()
+			out := strings.Builder{}
+			if err = f.Format(&out, s, iterator); err == nil {
+				output = out.String()
 			}
 		}
-		return input
+		return output
 	}, nil
 }
 

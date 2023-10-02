@@ -83,23 +83,6 @@ func TestPrompt_NumLines(t *testing.T) {
 }
 
 func TestPrompt_Prompt(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-
-	t.Run("style error", func(t *testing.T) {
-		p := generateTestPrompt(t, ctx)
-
-		s := StyleDefault
-		s.Dimensions.WidthMin = 50
-		s.Dimensions.WidthMax = 40
-		p.SetStyle(s)
-
-		userInput, err := p.Prompt(ctx)
-		assert.Empty(t, userInput)
-		assert.NotNil(t, err)
-		assert.True(t, errors.Is(err, ErrInvalidDimensions))
-	})
-
 	generateTestPromptWithMockReader := func(t *testing.T, ctx context.Context, mc *gomock.Controller, chErrors chan error, chKeyEvents chan tea.KeyMsg, chWindowSizeEvents chan tea.WindowSizeMsg) *prompt {
 		mockReader := mock_input.NewMockReader(mc)
 		mockReader.EXPECT().Begin(gomock.Any())
@@ -114,14 +97,32 @@ func TestPrompt_Prompt(t *testing.T) {
 		return p
 	}
 
+	t.Run("style error", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+
+		p := generateTestPrompt(t, ctx)
+		s := StyleDefault
+		s.Dimensions.WidthMin = 50
+		s.Dimensions.WidthMax = 40
+		p.SetStyle(s)
+
+		userInput, err := p.Prompt(ctx)
+		assert.Empty(t, userInput)
+		assert.NotNil(t, err)
+		assert.True(t, errors.Is(err, ErrInvalidDimensions))
+	})
+
 	t.Run("input reader error", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+
 		chErrors := make(chan error, 1)
 		chKeyEvents := make(chan tea.KeyMsg, 1)
 		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
 
 		mc := gomock.NewController(t)
 		defer mc.Finish()
-
 		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
 		go func() {
 			<-time.After(time.Second / 10) // some time for all goroutines to start
@@ -134,13 +135,15 @@ func TestPrompt_Prompt(t *testing.T) {
 	})
 
 	t.Run("input error", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+
 		chErrors := make(chan error, 1)
 		chKeyEvents := make(chan tea.KeyMsg, 1)
 		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
 
 		mc := gomock.NewController(t)
 		defer mc.Finish()
-
 		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
 		go func() {
 			<-time.After(time.Second / 10) // some time for all goroutines to start
@@ -152,14 +155,37 @@ func TestPrompt_Prompt(t *testing.T) {
 		assert.True(t, errors.Is(err, ErrAborted))
 	})
 
-	t.Run("no error", func(t *testing.T) {
+	t.Run("context cancelled", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+
 		chErrors := make(chan error, 1)
 		chKeyEvents := make(chan tea.KeyMsg, 1)
 		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
 
 		mc := gomock.NewController(t)
 		defer mc.Finish()
+		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
+		go func() {
+			<-time.After(time.Second / 10) // some time for all goroutines to start
+			cancel()
+		}()
+		userInput, err := p.Prompt(ctx)
+		assert.Empty(t, userInput)
+		assert.NotNil(t, err)
+		assert.True(t, errors.Is(err, context.Canceled))
+	})
 
+	t.Run("no error", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+
+		chErrors := make(chan error, 1)
+		chKeyEvents := make(chan tea.KeyMsg, 1)
+		chWindowSizeEvents := make(chan tea.WindowSizeMsg, 1)
+
+		mc := gomock.NewController(t)
+		defer mc.Finish()
 		p := generateTestPromptWithMockReader(t, ctx, mc, chErrors, chKeyEvents, chWindowSizeEvents)
 		go func() {
 			<-time.After(time.Second / 10) // some time for all goroutines to start

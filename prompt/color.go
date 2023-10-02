@@ -73,14 +73,15 @@ func (c Color) Sprint(a ...any) string {
 	}
 
 	// if no escape sequence was generated, just return input
-	if cacheVal == "" {
-		return fmt.Sprint(a...)
+	out := fmt.Sprint(a...)
+	if len(out) == 0 || len(cacheVal) == 0 {
+		return out
 	}
 
 	// generate the colored string
 	sb := strings.Builder{}
 	sb.WriteString(cacheVal)
-	sb.WriteString(fmt.Sprint(a...))
+	sb.WriteString(out)
 	sb.WriteString(escSeqReset)
 	return sb.String()
 }

@@ -59,10 +59,9 @@ func (p *prompt) updateSuggestions(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-tick:
-			if p.isRenderPaused() {
-				continue
+			if !p.isRenderPaused() {
+				lastLine, lastWord, lastIdx = p.updateSuggestionsInternal(lastLine, lastWord, lastIdx)
 			}
-			lastLine, lastWord, lastIdx = p.updateSuggestionsInternal(lastLine, lastWord, lastIdx)
 		}
 	}
 }
@@ -138,6 +137,11 @@ func printSuggestionsDropDown(suggestions []Suggestion, suggestionsIdx int, styl
 	}
 	lenValue = clampValue(lenValue, style.ValueLengthMin, style.ValueLengthMax)
 	lenHint = clampValueAllowZero(lenHint, style.HintLengthMin, style.HintLengthMax)
+	if suggestionsIdx < 0 {
+		suggestionsIdx = 0
+	} else if suggestionsIdx >= len(suggestions) {
+		suggestionsIdx = len(suggestions) - 1
+	}
 
 	// calculate the view port range (range of suggestions to display)
 	start, stop := calculateViewportRange(len(suggestions), suggestionsIdx, style.NumItems)

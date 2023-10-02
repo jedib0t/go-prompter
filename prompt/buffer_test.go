@@ -822,7 +822,7 @@ func TestBuffer_getWordAtCursor(t *testing.T) {
 	assert.Equal(t, 0, idx)
 }
 
-func TestLinesChangedMap(t *testing.T) {
+func Test_linesChangedMap(t *testing.T) {
 	lcm := make(linesChangedMap)
 	assert.Empty(t, lcm)
 	assert.True(t, lcm.NothingChanged())

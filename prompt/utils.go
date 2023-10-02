@@ -2,6 +2,7 @@ package prompt
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/text"
 )
@@ -57,7 +58,7 @@ func clampValueAllowZero(val, min, max int) int {
 
 func insertCursor(input string, insertIdx int, color Color) string {
 	inputRunes := []rune(input)
-	colIdx, escSeq, inEscSeq := 0, make([]rune, 0), false
+	visibleCharIdx, escSeq, inEscSeq := 0, make([]rune, 0), false
 	for idx, r := range inputRunes {
 		// skip all the color coding escape sequences
 		if r == escSeqStart {
@@ -68,17 +69,20 @@ func insertCursor(input string, insertIdx int, color Color) string {
 			escSeq = append(escSeq, r)
 			if r == escSeqStop {
 				inEscSeq = false
+				if strings.HasSuffix(string(escSeq), escSeqReset) {
+					escSeq = make([]rune, 0)
+				}
 			}
 			continue
 		}
-		if string(escSeq) == escSeqReset {
-			escSeq = make([]rune, 0)
-		}
 
-		if colIdx == insertIdx {
-			output := append([]rune{}, inputRunes[:idx]...)
-			if len(escSeq) > 0 {
-				output = append(output, []rune(escSeqReset)...)
+		if visibleCharIdx == insertIdx {
+			var output []rune
+			if visibleCharIdx > 0 {
+				output = append([]rune{}, inputRunes[:idx]...)
+				if len(escSeq) > 0 {
+					output = append(output, []rune(escSeqReset)...)
+				}
 			}
 			output = append(output, []rune(color.Sprintf("%c", inputRunes[idx]))...)
 			if len(escSeq) > 0 {
@@ -87,7 +91,7 @@ func insertCursor(input string, insertIdx int, color Color) string {
 			output = append(output, inputRunes[idx+1:]...)
 			return string(output)
 		}
-		colIdx++
+		visibleCharIdx++
 	}
 
 	return fmt.Sprintf("%s%s", input, color.Sprint(" "))
@@ -105,7 +109,7 @@ func overwriteContents(input string, newContent string, insertIdx int, maxWidth 
 	if newContentWidth >= maxWidth {
 		return text.Trim(newContent, maxWidth)
 	}
-	// move the autocomplete dropdown left if it go beyond EOL
+	// move the content left if it goes beyond EOL
 	for insertIdx > 0 && insertIdx+newContentWidth > maxWidth {
 		insertIdx--
 	}
