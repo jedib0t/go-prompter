@@ -109,11 +109,9 @@ func main() {
 
 	// Prompt the user and handle each input in a loop until we are done for any
 	// reason (user wants to quit, etc.).
-	cmdNum := len(p.History())
 	for {
 		// Update the # of the command we are handling on the title bar
-		cmdNum++
-		segmentCmdNum.SetContent(fmt.Sprintf("#%d", cmdNum))
+		segmentCmdNum.SetContent(fmt.Sprint(len(p.History()) + 1))
 
 		// Prompt
 		input, err := p.Prompt(ctx)
@@ -127,6 +125,9 @@ func main() {
 		switch strings.ToLower(cmd) {
 		case "/?", "/help":
 			printHelp()
+		case "/clear":
+			p.ClearHistory()
+			fmt.Println("Cleared history.")
 		case "/quit":
 			fmt.Println("Bye!")
 			os.Exit(0)
@@ -186,6 +187,7 @@ func printHelp() {
 	fmt.Println(`SQL Prompt demo using github.com/jedib0t/go-prompter.
 
 * /?, /help    Prints this help text.
+* /clear       Clears History.
 * /quit        Exits the prompt.`)
 }
 

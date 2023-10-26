@@ -10,6 +10,9 @@ import (
 // Prompter in the interface to create and manage a shell-like interactive
 // command prompt.
 type Prompter interface {
+	// ClearHistory clears all record of previously executed commands.
+	ClearHistory()
+
 	// CursorLocation returns the current location of the cursor on the prompt.
 	CursorLocation() CursorLocation
 
@@ -86,6 +89,7 @@ type Prompter interface {
 	// SetHistoryExecPrefix sets up the pattern used to exec command from
 	// history. Example (prefix="!"):
 	//   - !10 == execute 10th command
+	//   - ! == execute last command in history
 	SetHistoryExecPrefix(prefix string)
 
 	// SetHistoryListPrefix sets up the prefix used to list commands from

@@ -20,6 +20,15 @@ var (
 	errFoo = errors.New("test-error-foo")
 )
 
+func TestPrompt_ClearHistory(t *testing.T) {
+	p := &prompt{}
+	p.SetHistory(testHistoryCommands)
+	assert.Len(t, p.History(), len(testHistoryCommands))
+
+	p.ClearHistory()
+	assert.Len(t, p.History(), 0)
+}
+
 func TestPrompt_CursorLocation(t *testing.T) {
 	p := &prompt{}
 	assert.Equal(t, CursorLocation{}, p.CursorLocation())

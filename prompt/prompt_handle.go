@@ -1,7 +1,6 @@
 package prompt
 
 import (
-	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,8 +16,9 @@ func (p *prompt) handleHistoryExec(output *termenv.Output, cmdNum int) {
 
 	cmd := p.history.Get(cmdNum - 1)
 	if cmd == "" {
-		errMsg := fmt.Sprintf("ERROR: invalid command number: %v.\n\n", cmdNum)
-		_, _ = output.WriteString(p.style.Colors.Error.Sprintf(errMsg))
+		_, _ = output.WriteString(p.style.Colors.Error.Sprintf("ERROR: invalid command number: %v.\n", cmdNum))
+		_, _ = output.WriteString("\n")
+		p.linesRendered = make([]string, 0)
 		p.buffer.Reset()
 		return
 	}

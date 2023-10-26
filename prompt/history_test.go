@@ -139,5 +139,5 @@ func TestPrompt_processHistoryCommand(t *testing.T) {
 	hc = p.processHistoryCommand("!!")
 	assert.NotNil(t, hc)
 	assert.Equal(t, historyCommandExec, hc.Type)
-	assert.Equal(t, 3, hc.Value)
+	assert.Equal(t, len(p.history.Commands), hc.Value)
 }
