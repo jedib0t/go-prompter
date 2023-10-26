@@ -83,6 +83,11 @@ type prompt struct {
 	timeSyntaxGen               time.Duration
 }
 
+// ClearHistory clears all record of previously executed commands.
+func (p *prompt) ClearHistory() {
+	p.SetHistory(nil)
+}
+
 // CursorLocation returns the current location of the cursor on the prompt.
 func (p *prompt) CursorLocation() CursorLocation {
 	if p.buffer != nil {
@@ -268,6 +273,7 @@ func (p *prompt) SetHistory(commands []HistoryCommand) {
 // SetHistoryExecPrefix sets up the pattern used to exec command from history.
 // Example (prefix="!"):
 //   - !10 == execute 10th command
+//   - ! == execute last command in history
 func (p *prompt) SetHistoryExecPrefix(prefix string) {
 	p.historyExecPrefix = prefix
 }

@@ -41,6 +41,18 @@ func (m *MockPrompter) EXPECT() *MockPrompterMockRecorder {
 	return m.recorder
 }
 
+// ClearHistory mocks base method.
+func (m *MockPrompter) ClearHistory() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ClearHistory")
+}
+
+// ClearHistory indicates an expected call of ClearHistory.
+func (mr *MockPrompterMockRecorder) ClearHistory() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClearHistory", reflect.TypeOf((*MockPrompter)(nil).ClearHistory))
+}
+
 // CursorLocation mocks base method.
 func (m *MockPrompter) CursorLocation() prompt.CursorLocation {
 	m.ctrl.T.Helper()
