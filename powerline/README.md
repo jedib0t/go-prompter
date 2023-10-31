@@ -8,6 +8,6 @@ Generate Powerline-like prompts in GoLang.
 * Auto-adjust and auto-remove segments to meet terminal width limitations
 * Usable as header and/or prefix for the Prompt
 
-Example code can be found [here](/examples/powerline). Sample output:
+Example code can be found [here](/examples/powerline). Output:
 
-<img src="demo.png" alt="Demo" />
+<img src="../examples/powerline/output.png" alt="Example Output" />

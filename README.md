@@ -9,9 +9,9 @@
 
 Build full-featured CLI prompts in GoLang.
 
-A SQL prompt demo with most of the major features in play:
+Demo of a SQL Prompt with the major features in play:
 
-<img src="prompt/demo.gif" alt="Demo"/>
+<img src="examples/prompt/sql/demo.gif" alt="Demo"/>
 
 ## Features
 

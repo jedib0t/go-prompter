@@ -9,6 +9,6 @@ library and provides a simpler interface to deal with the input:
 * Mouse-clicks and motion
 * Window/terminal resizes
 
-Example code can be found [here](/examples/input). Sample output:
+Example code can be found [here](/examples/input). Output:
 
-<img src="demo.png" alt="Demo" />
+<img src="../examples/input/output.png" alt="Example Output" />
