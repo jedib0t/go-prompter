@@ -2,6 +2,12 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/jedib0t/go-prompter/powerline.svg)](https://pkg.go.dev/github.com/jedib0t/go-prompter/powerline)
 
-Demo using `go run ./examples/powerline`:
+Generate Powerline-like prompts in GoLang.
 
-<img src="demo.png" alt="Demo" />
+* Supports "segments" on both left and right sides
+* Auto-adjust and auto-remove segments to meet terminal width limitations
+* Usable as header and/or prefix for the Prompt
+
+Example code can be found [here](/examples/powerline). Output:
+
+<img src="../examples/powerline/output.png" alt="Example Output" />

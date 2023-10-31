@@ -9,9 +9,9 @@
 
 Build full-featured CLI prompts in GoLang.
 
-A SQL prompt demo with most of the major features in play:
+Demo of a SQL Prompt with the major features in play:
 
-<img src="prompt/demo.gif" alt="Demo"/>
+<img src="examples/prompt/sql/demo.gif" alt="Demo"/>
 
 ## Features
 
@@ -22,25 +22,25 @@ A SQL prompt demo with most of the major features in play:
   * Expand to context based additional Keywords using `SetAutoCompleterContextual(...)`
 * Generate prompts with or without a "prefix"
 * Header and Footer generator functions for dynamic content
-* History integration with built-in go-back/go-forward/list/rerun
+* History integration with built-in go-back/go-forward/list/re-run
 * Completely customizable [KeyMap](prompt/key_map.go)
-  * Control what Actions can be triggered by what (special) Key-combinations
-* Custom command-shortcuts if the KeyMap is not flexible enough
-* Extremely flexible [Styling/Customization](prompt/style.go)
-  * Auto-Complete look and feel
-  * Cursor look and feel
+  * Well-defined Actions that can be mapped to Key-Sequences
+* Custom command-shortcuts for Key-Sequences
+* Flexible [Styling/Customization](prompt/style.go) to change the look and feel of
+  * Auto-Complete Drop-down
+  * Cursor
   * Dimensions (height/width)
-  * Line-Numbers look and feel
-  * Scrollbar look and feel
+  * Line-Numbers
+  * Scrollbar
 
 ## Bonus
 
-* [Input](input) package that wraps around [bubbletea](https://github.com/charmbracelet/bubbletea)
-  and provides a basic interface to capture input events
+* [Input](input) package that wraps around the [Bubble Tea](https://github.com/charmbracelet/bubbletea)
+  library and provides a basic interface to capture input events
   * Key-presses
   * Mouse-clicks and motion
   * Window/terminal resizes
 * [Powerline](powerline) package to generate Powerline-like lines
   * Supports "segments" on both left and right sides
-  * Can auto-adjust and auto-remove segments to meet terminal width limitations
+  * Auto-adjust and auto-remove segments to meet terminal width limitations
   * Usable as header and/or prefix for the Prompt
