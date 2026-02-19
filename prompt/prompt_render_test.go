@@ -37,7 +37,7 @@ func TestPrompt_renderView(t *testing.T) {
 		"\x1b[2K\x1b[38;5;239;48;5;235m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
 		"",
 	}
-	compareLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
+	compareLines(t, expectedLines, strings.Split(output.String(), "\r\n"), testSubtitle)
 
 	testSubtitle = "Add a new line of text"
 	output.Reset()
@@ -50,7 +50,7 @@ func TestPrompt_renderView(t *testing.T) {
 		"\x1b[2K\x1b[38;5;239;48;5;235m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
 		"",
 	}
-	compareLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
+	compareLines(t, expectedLines, strings.Split(output.String(), "\r\n"), testSubtitle)
 
 	testSubtitle = "Add one more new line of text"
 	output.Reset()
@@ -63,7 +63,7 @@ func TestPrompt_renderView(t *testing.T) {
 		"\x1b[2K\x1b[38;5;239;48;5;235m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
 		"",
 	}
-	compareLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
+	compareLines(t, expectedLines, strings.Split(output.String(), "\r\n"), testSubtitle)
 
 	testSubtitle = "Render the whole thing again"
 	output.Reset()
@@ -78,7 +78,7 @@ func TestPrompt_renderView(t *testing.T) {
 		"\x1b[2K\x1b[38;5;239;48;5;235m----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2\x1b[0m",
 		"",
 	}
-	compareLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
+	compareLines(t, expectedLines, strings.Split(output.String(), "\r\n"), testSubtitle)
 
 	testSubtitle = "Move cursor to the very top"
 	output.Reset()
@@ -90,7 +90,7 @@ func TestPrompt_renderView(t *testing.T) {
 		"\x1b[1B\x1b[2K\x1b[38;5;239;48;5;235m 3 \x1b[0m and no idea what this is about.",
 		"\x1b[1B",
 	}
-	compareLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
+	compareLines(t, expectedLines, strings.Split(output.String(), "\r\n"), testSubtitle)
 
 	testSubtitle = "Hide the cursor"
 	output.Reset()
@@ -100,7 +100,7 @@ func TestPrompt_renderView(t *testing.T) {
 		"\x1b[5A\x1b[1B\x1b[2K\x1b[38;5;239;48;5;235m 1 \x1b[0m This is a test",
 		"\x1b[1B\x1b[1B\x1b[1B",
 	}
-	compareLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
+	compareLines(t, expectedLines, strings.Split(output.String(), "\r\n"), testSubtitle)
 
 	testSubtitle = "Hide the rulers"
 	output.Reset()
@@ -116,7 +116,7 @@ func TestPrompt_renderView(t *testing.T) {
 		"\x1b[2K\x1b[38;5;239;48;5;235m 3 \x1b[0m and no idea what this is about.",
 		"",
 	}
-	compareLines(t, expectedLines, strings.Split(output.String(), "\n"), testSubtitle)
+	compareLines(t, expectedLines, strings.Split(output.String(), "\r\n"), testSubtitle)
 
 	testSubtitle = "Render the whole thing again with debug mode"
 	output.Reset()
@@ -125,7 +125,7 @@ func TestPrompt_renderView(t *testing.T) {
 	p.setDebugData("foo", "bar")
 	p.updateModel(true)
 	p.renderView(termenv.NewOutput(&output), testReasonDebug)
-	actualLines := strings.Split(output.String(), "\n")
+	actualLines := strings.Split(output.String(), "\r\n")
 	assert.Len(t, actualLines, 5, testSubtitle)
 	assert.Contains(t, actualLines[3], p.debugDataAsString(), testSubtitle)
 	assert.Contains(t, actualLines[3], "time=", testSubtitle)
@@ -135,7 +135,7 @@ func TestPrompt_renderView(t *testing.T) {
 	p.setDebugData("bar", "baz")
 	p.updateModel(true)
 	p.renderView(termenv.NewOutput(&output), testReasonDebug)
-	actualLines = strings.Split(output.String(), "\n")
+	actualLines = strings.Split(output.String(), "\r\n")
 	assert.Len(t, actualLines, 2, testSubtitle)
 	assert.Contains(t, actualLines[0], p.debugDataAsString(), testSubtitle)
 	assert.Contains(t, actualLines[0], "time=", testSubtitle)
@@ -153,7 +153,7 @@ func TestPrompt_renderView(t *testing.T) {
 	p.resumeRender()
 	p.updateModel(true)
 	p.renderView(termenv.NewOutput(&output), testReasonDebug)
-	actualLines = strings.Split(output.String(), "\n")
+	actualLines = strings.Split(output.String(), "\r\n")
 	assert.Len(t, actualLines, 2, testSubtitle)
 	assert.Contains(t, actualLines[0], p.debugDataAsString(), testSubtitle)
 	assert.Contains(t, actualLines[0], "time=", testSubtitle)

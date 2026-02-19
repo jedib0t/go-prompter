@@ -54,7 +54,7 @@ func TestPrompt_handleHistoryList(t *testing.T) {
 
 	output := strings.Builder{}
 	p.handleHistoryList(termenv.NewOutput(&output), 1)
-	assert.Contains(t, output.String(), p.history.Render(1, 0))
+	assert.Contains(t, output.String(), toRawTermNewlines(p.history.Render(1, 0)))
 	assert.Equal(t, "", p.buffer.String())
 	assert.False(t, p.buffer.IsDone())
 	assert.False(t, p.renderingPaused)

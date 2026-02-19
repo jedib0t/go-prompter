@@ -7,6 +7,13 @@ import (
 	"github.com/muesli/termenv"
 )
 
+// toRawTermNewlines converts \n to \r\n for correct display in raw terminal
+// mode where OPOST is disabled and \n alone does not return the cursor to
+// column 0.
+func toRawTermNewlines(s string) string {
+	return strings.ReplaceAll(s, "\n", "\r\n")
+}
+
 func (p *prompt) handleHistoryExec(output *termenv.Output, cmdNum int) {
 	p.pauseRender()
 	defer p.resumeRender()
@@ -16,8 +23,8 @@ func (p *prompt) handleHistoryExec(output *termenv.Output, cmdNum int) {
 
 	cmd := p.history.Get(cmdNum - 1)
 	if cmd == "" {
-		_, _ = output.WriteString(p.style.Colors.Error.Sprintf("ERROR: invalid command number: %v.\n", cmdNum))
-		_, _ = output.WriteString("\n")
+		_, _ = output.WriteString(p.style.Colors.Error.Sprintf("ERROR: invalid command number: %v.\r\n", cmdNum))
+		_, _ = output.WriteString("\r\n")
 		p.linesRendered = make([]string, 0)
 		p.buffer.Reset()
 		return
@@ -34,8 +41,8 @@ func (p *prompt) handleHistoryList(output *termenv.Output, numItems int) {
 	p.updateModel(false)
 	p.renderView(output, "hist.list", true)
 
-	_, _ = output.WriteString(p.history.Render(numItems, p.getDisplayWidth()))
-	_, _ = output.WriteString("\n")
+	_, _ = output.WriteString(toRawTermNewlines(p.history.Render(numItems, p.getDisplayWidth())))
+	_, _ = output.WriteString("\r\n")
 	p.linesRendered = make([]string, 0)
 	p.buffer.Reset()
 }
