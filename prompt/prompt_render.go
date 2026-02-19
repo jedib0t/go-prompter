@@ -107,7 +107,7 @@ func (p *prompt) renderView(output *termenv.Output, reason string, forced ...boo
 		if p.debug { // render the "second" this line was rendered to screen
 			_, _ = output.WriteString(p.style.Colors.Debug.Sprintf(" %02d ", time.Now().Second()))
 		}
-		_, _ = output.WriteString(fmt.Sprintf("%s\n", line))
+		_, _ = output.WriteString(fmt.Sprintf("%s\r\n", line))
 	}
 
 	if p.debug {
@@ -118,8 +118,8 @@ func (p *prompt) renderView(output *termenv.Output, reason string, forced ...boo
 
 		output.ClearLine()
 		_, _ = output.WriteString(p.style.Colors.Debug.Sprintf(" %02d ", time.Now().Second()))
-		_, _ = output.WriteString(p.style.Colors.Debug.Sprintf(
-			text.AlignCenter.Apply(stats, p.getDisplayWidth())) + "\n",
+		_, _ = output.WriteString(p.style.Colors.Debug.Sprint(
+			text.AlignCenter.Apply(stats, p.getDisplayWidth())) + "\r\n",
 		)
 	}
 }

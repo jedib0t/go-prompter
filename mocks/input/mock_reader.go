@@ -5,6 +5,7 @@
 //
 //	mockgen -destination mocks/input/mock_reader.go github.com/jedib0t/go-prompter/input Reader
 //
+
 // Package mock_input is a generated GoMock package.
 package mock_input
 
@@ -20,6 +21,7 @@ import (
 type MockReader struct {
 	ctrl     *gomock.Controller
 	recorder *MockReaderMockRecorder
+	isgomock struct{}
 }
 
 // MockReaderMockRecorder is the mock recorder for MockReader.
@@ -40,15 +42,15 @@ func (m *MockReader) EXPECT() *MockReaderMockRecorder {
 }
 
 // Begin mocks base method.
-func (m *MockReader) Begin(arg0 context.Context) {
+func (m *MockReader) Begin(ctx context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Begin", arg0)
+	m.ctrl.Call(m, "Begin", ctx)
 }
 
 // Begin indicates an expected call of Begin.
-func (mr *MockReaderMockRecorder) Begin(arg0 any) *gomock.Call {
+func (mr *MockReaderMockRecorder) Begin(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Begin", reflect.TypeOf((*MockReader)(nil).Begin), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Begin", reflect.TypeOf((*MockReader)(nil).Begin), ctx)
 }
 
 // End mocks base method.
@@ -120,17 +122,17 @@ func (mr *MockReaderMockRecorder) Reset() *gomock.Call {
 }
 
 // Send mocks base method.
-func (m *MockReader) Send(arg0 any) error {
+func (m *MockReader) Send(msg any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", arg0)
+	ret := m.ctrl.Call(m, "Send", msg)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Send indicates an expected call of Send.
-func (mr *MockReaderMockRecorder) Send(arg0 any) *gomock.Call {
+func (mr *MockReaderMockRecorder) Send(msg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockReader)(nil).Send), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockReader)(nil).Send), msg)
 }
 
 // WindowSizeEvents mocks base method.

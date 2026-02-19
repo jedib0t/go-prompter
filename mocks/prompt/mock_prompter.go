@@ -5,6 +5,7 @@
 //
 //	mockgen -destination mocks/prompt/mock_prompter.go github.com/jedib0t/go-prompter/prompt Prompter
 //
+
 // Package mock_prompt is a generated GoMock package.
 package mock_prompt
 
@@ -22,6 +23,7 @@ import (
 type MockPrompter struct {
 	ctrl     *gomock.Controller
 	recorder *MockPrompterMockRecorder
+	isgomock struct{}
 }
 
 // MockPrompterMockRecorder is the mock recorder for MockPrompter.
@@ -124,26 +126,26 @@ func (mr *MockPrompterMockRecorder) NumLines() *gomock.Call {
 }
 
 // Prompt mocks base method.
-func (m *MockPrompter) Prompt(arg0 context.Context) (string, error) {
+func (m *MockPrompter) Prompt(ctx context.Context) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Prompt", arg0)
+	ret := m.ctrl.Call(m, "Prompt", ctx)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Prompt indicates an expected call of Prompt.
-func (mr *MockPrompterMockRecorder) Prompt(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) Prompt(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Prompt", reflect.TypeOf((*MockPrompter)(nil).Prompt), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Prompt", reflect.TypeOf((*MockPrompter)(nil).Prompt), ctx)
 }
 
 // SendInput mocks base method.
-func (m *MockPrompter) SendInput(arg0 []any, arg1 ...time.Duration) error {
+func (m *MockPrompter) SendInput(a []any, delayBetweenRunes ...time.Duration) error {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0}
-	for _, a := range arg1 {
-		varargs = append(varargs, a)
+	varargs := []any{a}
+	for _, a_2 := range delayBetweenRunes {
+		varargs = append(varargs, a_2)
 	}
 	ret := m.ctrl.Call(m, "SendInput", varargs...)
 	ret0, _ := ret[0].(error)
@@ -151,264 +153,264 @@ func (m *MockPrompter) SendInput(arg0 []any, arg1 ...time.Duration) error {
 }
 
 // SendInput indicates an expected call of SendInput.
-func (mr *MockPrompterMockRecorder) SendInput(arg0 any, arg1 ...any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SendInput(a any, delayBetweenRunes ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0}, arg1...)
+	varargs := append([]any{a}, delayBetweenRunes...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendInput", reflect.TypeOf((*MockPrompter)(nil).SendInput), varargs...)
 }
 
 // SetAutoCompleter mocks base method.
-func (m *MockPrompter) SetAutoCompleter(arg0 prompt.AutoCompleter) {
+func (m *MockPrompter) SetAutoCompleter(global prompt.AutoCompleter) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetAutoCompleter", arg0)
+	m.ctrl.Call(m, "SetAutoCompleter", global)
 }
 
 // SetAutoCompleter indicates an expected call of SetAutoCompleter.
-func (mr *MockPrompterMockRecorder) SetAutoCompleter(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetAutoCompleter(global any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAutoCompleter", reflect.TypeOf((*MockPrompter)(nil).SetAutoCompleter), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAutoCompleter", reflect.TypeOf((*MockPrompter)(nil).SetAutoCompleter), global)
 }
 
 // SetAutoCompleterContextual mocks base method.
-func (m *MockPrompter) SetAutoCompleterContextual(arg0 prompt.AutoCompleter) {
+func (m *MockPrompter) SetAutoCompleterContextual(autoCompleter prompt.AutoCompleter) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetAutoCompleterContextual", arg0)
+	m.ctrl.Call(m, "SetAutoCompleterContextual", autoCompleter)
 }
 
 // SetAutoCompleterContextual indicates an expected call of SetAutoCompleterContextual.
-func (mr *MockPrompterMockRecorder) SetAutoCompleterContextual(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetAutoCompleterContextual(autoCompleter any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAutoCompleterContextual", reflect.TypeOf((*MockPrompter)(nil).SetAutoCompleterContextual), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAutoCompleterContextual", reflect.TypeOf((*MockPrompter)(nil).SetAutoCompleterContextual), autoCompleter)
 }
 
 // SetCommandShortcuts mocks base method.
-func (m *MockPrompter) SetCommandShortcuts(arg0 map[prompt.KeySequence]string) {
+func (m *MockPrompter) SetCommandShortcuts(shortcuts map[prompt.KeySequence]string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetCommandShortcuts", arg0)
+	m.ctrl.Call(m, "SetCommandShortcuts", shortcuts)
 }
 
 // SetCommandShortcuts indicates an expected call of SetCommandShortcuts.
-func (mr *MockPrompterMockRecorder) SetCommandShortcuts(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetCommandShortcuts(shortcuts any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCommandShortcuts", reflect.TypeOf((*MockPrompter)(nil).SetCommandShortcuts), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCommandShortcuts", reflect.TypeOf((*MockPrompter)(nil).SetCommandShortcuts), shortcuts)
 }
 
 // SetDebug mocks base method.
-func (m *MockPrompter) SetDebug(arg0 bool) {
+func (m *MockPrompter) SetDebug(debug bool) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetDebug", arg0)
+	m.ctrl.Call(m, "SetDebug", debug)
 }
 
 // SetDebug indicates an expected call of SetDebug.
-func (mr *MockPrompterMockRecorder) SetDebug(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetDebug(debug any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDebug", reflect.TypeOf((*MockPrompter)(nil).SetDebug), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDebug", reflect.TypeOf((*MockPrompter)(nil).SetDebug), debug)
 }
 
 // SetFooter mocks base method.
-func (m *MockPrompter) SetFooter(arg0 string) {
+func (m *MockPrompter) SetFooter(header string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetFooter", arg0)
+	m.ctrl.Call(m, "SetFooter", header)
 }
 
 // SetFooter indicates an expected call of SetFooter.
-func (mr *MockPrompterMockRecorder) SetFooter(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetFooter(header any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFooter", reflect.TypeOf((*MockPrompter)(nil).SetFooter), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFooter", reflect.TypeOf((*MockPrompter)(nil).SetFooter), header)
 }
 
 // SetFooterGenerator mocks base method.
-func (m *MockPrompter) SetFooterGenerator(arg0 prompt.LineGenerator) {
+func (m *MockPrompter) SetFooterGenerator(footer prompt.LineGenerator) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetFooterGenerator", arg0)
+	m.ctrl.Call(m, "SetFooterGenerator", footer)
 }
 
 // SetFooterGenerator indicates an expected call of SetFooterGenerator.
-func (mr *MockPrompterMockRecorder) SetFooterGenerator(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetFooterGenerator(footer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFooterGenerator", reflect.TypeOf((*MockPrompter)(nil).SetFooterGenerator), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFooterGenerator", reflect.TypeOf((*MockPrompter)(nil).SetFooterGenerator), footer)
 }
 
 // SetHeader mocks base method.
-func (m *MockPrompter) SetHeader(arg0 string) {
+func (m *MockPrompter) SetHeader(header string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetHeader", arg0)
+	m.ctrl.Call(m, "SetHeader", header)
 }
 
 // SetHeader indicates an expected call of SetHeader.
-func (mr *MockPrompterMockRecorder) SetHeader(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetHeader(header any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeader", reflect.TypeOf((*MockPrompter)(nil).SetHeader), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeader", reflect.TypeOf((*MockPrompter)(nil).SetHeader), header)
 }
 
 // SetHeaderGenerator mocks base method.
-func (m *MockPrompter) SetHeaderGenerator(arg0 prompt.LineGenerator) {
+func (m *MockPrompter) SetHeaderGenerator(header prompt.LineGenerator) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetHeaderGenerator", arg0)
+	m.ctrl.Call(m, "SetHeaderGenerator", header)
 }
 
 // SetHeaderGenerator indicates an expected call of SetHeaderGenerator.
-func (mr *MockPrompterMockRecorder) SetHeaderGenerator(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetHeaderGenerator(header any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeaderGenerator", reflect.TypeOf((*MockPrompter)(nil).SetHeaderGenerator), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeaderGenerator", reflect.TypeOf((*MockPrompter)(nil).SetHeaderGenerator), header)
 }
 
 // SetHistory mocks base method.
-func (m *MockPrompter) SetHistory(arg0 []prompt.HistoryCommand) {
+func (m *MockPrompter) SetHistory(commands []prompt.HistoryCommand) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetHistory", arg0)
+	m.ctrl.Call(m, "SetHistory", commands)
 }
 
 // SetHistory indicates an expected call of SetHistory.
-func (mr *MockPrompterMockRecorder) SetHistory(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetHistory(commands any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHistory", reflect.TypeOf((*MockPrompter)(nil).SetHistory), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHistory", reflect.TypeOf((*MockPrompter)(nil).SetHistory), commands)
 }
 
 // SetHistoryExecPrefix mocks base method.
-func (m *MockPrompter) SetHistoryExecPrefix(arg0 string) {
+func (m *MockPrompter) SetHistoryExecPrefix(prefix string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetHistoryExecPrefix", arg0)
+	m.ctrl.Call(m, "SetHistoryExecPrefix", prefix)
 }
 
 // SetHistoryExecPrefix indicates an expected call of SetHistoryExecPrefix.
-func (mr *MockPrompterMockRecorder) SetHistoryExecPrefix(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetHistoryExecPrefix(prefix any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHistoryExecPrefix", reflect.TypeOf((*MockPrompter)(nil).SetHistoryExecPrefix), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHistoryExecPrefix", reflect.TypeOf((*MockPrompter)(nil).SetHistoryExecPrefix), prefix)
 }
 
 // SetHistoryListPrefix mocks base method.
-func (m *MockPrompter) SetHistoryListPrefix(arg0 string) {
+func (m *MockPrompter) SetHistoryListPrefix(prefix string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetHistoryListPrefix", arg0)
+	m.ctrl.Call(m, "SetHistoryListPrefix", prefix)
 }
 
 // SetHistoryListPrefix indicates an expected call of SetHistoryListPrefix.
-func (mr *MockPrompterMockRecorder) SetHistoryListPrefix(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetHistoryListPrefix(prefix any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHistoryListPrefix", reflect.TypeOf((*MockPrompter)(nil).SetHistoryListPrefix), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHistoryListPrefix", reflect.TypeOf((*MockPrompter)(nil).SetHistoryListPrefix), prefix)
 }
 
 // SetInput mocks base method.
-func (m *MockPrompter) SetInput(arg0 io.Reader) {
+func (m *MockPrompter) SetInput(input io.Reader) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetInput", arg0)
+	m.ctrl.Call(m, "SetInput", input)
 }
 
 // SetInput indicates an expected call of SetInput.
-func (mr *MockPrompterMockRecorder) SetInput(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetInput(input any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetInput", reflect.TypeOf((*MockPrompter)(nil).SetInput), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetInput", reflect.TypeOf((*MockPrompter)(nil).SetInput), input)
 }
 
 // SetKeyMap mocks base method.
-func (m *MockPrompter) SetKeyMap(arg0 prompt.KeyMap) error {
+func (m *MockPrompter) SetKeyMap(keyMap prompt.KeyMap) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetKeyMap", arg0)
+	ret := m.ctrl.Call(m, "SetKeyMap", keyMap)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetKeyMap indicates an expected call of SetKeyMap.
-func (mr *MockPrompterMockRecorder) SetKeyMap(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetKeyMap(keyMap any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetKeyMap", reflect.TypeOf((*MockPrompter)(nil).SetKeyMap), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetKeyMap", reflect.TypeOf((*MockPrompter)(nil).SetKeyMap), keyMap)
 }
 
 // SetOutput mocks base method.
-func (m *MockPrompter) SetOutput(arg0 io.Writer) {
+func (m *MockPrompter) SetOutput(output io.Writer) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetOutput", arg0)
+	m.ctrl.Call(m, "SetOutput", output)
 }
 
 // SetOutput indicates an expected call of SetOutput.
-func (mr *MockPrompterMockRecorder) SetOutput(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetOutput(output any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOutput", reflect.TypeOf((*MockPrompter)(nil).SetOutput), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOutput", reflect.TypeOf((*MockPrompter)(nil).SetOutput), output)
 }
 
 // SetPrefix mocks base method.
-func (m *MockPrompter) SetPrefix(arg0 string) {
+func (m *MockPrompter) SetPrefix(prefix string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetPrefix", arg0)
+	m.ctrl.Call(m, "SetPrefix", prefix)
 }
 
 // SetPrefix indicates an expected call of SetPrefix.
-func (mr *MockPrompterMockRecorder) SetPrefix(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetPrefix(prefix any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrefix", reflect.TypeOf((*MockPrompter)(nil).SetPrefix), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrefix", reflect.TypeOf((*MockPrompter)(nil).SetPrefix), prefix)
 }
 
 // SetPrefixer mocks base method.
-func (m *MockPrompter) SetPrefixer(arg0 prompt.Prefixer) {
+func (m *MockPrompter) SetPrefixer(prefixer prompt.Prefixer) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetPrefixer", arg0)
+	m.ctrl.Call(m, "SetPrefixer", prefixer)
 }
 
 // SetPrefixer indicates an expected call of SetPrefixer.
-func (mr *MockPrompterMockRecorder) SetPrefixer(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetPrefixer(prefixer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrefixer", reflect.TypeOf((*MockPrompter)(nil).SetPrefixer), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPrefixer", reflect.TypeOf((*MockPrompter)(nil).SetPrefixer), prefixer)
 }
 
 // SetRefreshInterval mocks base method.
-func (m *MockPrompter) SetRefreshInterval(arg0 time.Duration) {
+func (m *MockPrompter) SetRefreshInterval(interval time.Duration) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetRefreshInterval", arg0)
+	m.ctrl.Call(m, "SetRefreshInterval", interval)
 }
 
 // SetRefreshInterval indicates an expected call of SetRefreshInterval.
-func (mr *MockPrompterMockRecorder) SetRefreshInterval(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetRefreshInterval(interval any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRefreshInterval", reflect.TypeOf((*MockPrompter)(nil).SetRefreshInterval), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRefreshInterval", reflect.TypeOf((*MockPrompter)(nil).SetRefreshInterval), interval)
 }
 
 // SetStyle mocks base method.
-func (m *MockPrompter) SetStyle(arg0 prompt.Style) {
+func (m *MockPrompter) SetStyle(s prompt.Style) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetStyle", arg0)
+	m.ctrl.Call(m, "SetStyle", s)
 }
 
 // SetStyle indicates an expected call of SetStyle.
-func (mr *MockPrompterMockRecorder) SetStyle(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetStyle(s any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStyle", reflect.TypeOf((*MockPrompter)(nil).SetStyle), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStyle", reflect.TypeOf((*MockPrompter)(nil).SetStyle), s)
 }
 
 // SetSyntaxHighlighter mocks base method.
-func (m *MockPrompter) SetSyntaxHighlighter(arg0 prompt.SyntaxHighlighter) {
+func (m *MockPrompter) SetSyntaxHighlighter(highlighter prompt.SyntaxHighlighter) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetSyntaxHighlighter", arg0)
+	m.ctrl.Call(m, "SetSyntaxHighlighter", highlighter)
 }
 
 // SetSyntaxHighlighter indicates an expected call of SetSyntaxHighlighter.
-func (mr *MockPrompterMockRecorder) SetSyntaxHighlighter(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetSyntaxHighlighter(highlighter any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSyntaxHighlighter", reflect.TypeOf((*MockPrompter)(nil).SetSyntaxHighlighter), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSyntaxHighlighter", reflect.TypeOf((*MockPrompter)(nil).SetSyntaxHighlighter), highlighter)
 }
 
 // SetTerminationChecker mocks base method.
-func (m *MockPrompter) SetTerminationChecker(arg0 prompt.TerminationChecker) {
+func (m *MockPrompter) SetTerminationChecker(checker prompt.TerminationChecker) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetTerminationChecker", arg0)
+	m.ctrl.Call(m, "SetTerminationChecker", checker)
 }
 
 // SetTerminationChecker indicates an expected call of SetTerminationChecker.
-func (mr *MockPrompterMockRecorder) SetTerminationChecker(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetTerminationChecker(checker any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetTerminationChecker", reflect.TypeOf((*MockPrompter)(nil).SetTerminationChecker), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetTerminationChecker", reflect.TypeOf((*MockPrompter)(nil).SetTerminationChecker), checker)
 }
 
 // SetWidthEnforcer mocks base method.
-func (m *MockPrompter) SetWidthEnforcer(arg0 prompt.WidthEnforcer) {
+func (m *MockPrompter) SetWidthEnforcer(enforcer prompt.WidthEnforcer) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetWidthEnforcer", arg0)
+	m.ctrl.Call(m, "SetWidthEnforcer", enforcer)
 }
 
 // SetWidthEnforcer indicates an expected call of SetWidthEnforcer.
-func (mr *MockPrompterMockRecorder) SetWidthEnforcer(arg0 any) *gomock.Call {
+func (mr *MockPrompterMockRecorder) SetWidthEnforcer(enforcer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWidthEnforcer", reflect.TypeOf((*MockPrompter)(nil).SetWidthEnforcer), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWidthEnforcer", reflect.TypeOf((*MockPrompter)(nil).SetWidthEnforcer), enforcer)
 }
 
 // Style mocks base method.
