@@ -194,10 +194,10 @@ func TestPrompt_updateModel(t *testing.T) {
 		expectedLines := []string{
 			"[TestPrompt_updateModel/with_auto-complete]  1  select * from dual",
 			"[TestPrompt_updateModel/with_auto-complete]  2    where row\x1b[38;5;232;48;5;6m \x1b[0m",
-			"[TestPrompt_updateModel/with_auto-complete]            \x1b[38;5;16;48;5;214m row       \x1b[0m\x1b[38;5;16;48;5;208m                \x1b[0m",
-			"[TestPrompt_updateModel/with_auto-complete]            \x1b[38;5;16;48;5;45m row_count \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
-			"[TestPrompt_updateModel/with_auto-complete]            \x1b[38;5;16;48;5;45m rownum    \x1b[0m\x1b[38;5;0;48;5;39m Number of Rows \x1b[0m",
-			"[TestPrompt_updateModel/with_auto-complete]            \x1b[38;5;16;48;5;45m rows      \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
+			"                                                       \x1b[38;5;16;48;5;214m row       \x1b[0m\x1b[38;5;16;48;5;208m                \x1b[0m",
+			"                                                       \x1b[38;5;16;48;5;45m row_count \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
+			"                                                       \x1b[38;5;16;48;5;45m rownum    \x1b[0m\x1b[38;5;0;48;5;39m Number of Rows \x1b[0m",
+			"                                                       \x1b[38;5;16;48;5;45m rows      \x1b[0m\x1b[38;5;0;48;5;39m                \x1b[0m",
 		}
 		compareLines(t, expectedLines, p.linesToRender)
 	})

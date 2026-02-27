@@ -18,25 +18,20 @@ func (p *prompt) autoComplete(lines []string, cursorPos CursorLocation, startIdx
 	p.isInAutoComplete = true
 
 	// get the line styling
-	linePrefix, prefixWidth, _, numLen, _, _ := p.calculateLineStyling(lines)
+	_, prefixWidth, _, _, _, _ := p.calculateLineStyling(lines)
 	word, _ := p.buffer.getWordAtCursor(p.style.AutoComplete.WordDelimiters)
 	wordLen := len(word)
 
 	// get the suggestions printed to super-impose on the displayed lines
 	suggestionsDropDown := printSuggestionsDropDown(suggestions, suggestionsIdx, p.style.AutoComplete)
 
-	// if the suggestions are going beyond the last line, pad the lines
+	// if the suggestions are going beyond the last line, pad the lines with
+	// spaces matching the prefix width to avoid duplicating the prefix text
 	numEmptyLinesToAppend := (len(suggestionsDropDown) + 1 + cursorPos.Line - startIdx) - len(lines)
 	if numEmptyLinesToAppend > 0 {
-		prefix := linePrefix
-		if p.style.LineNumbers.Enabled {
-			prefix += strings.Repeat("", numLen)
-		}
-		if prefix != "" {
-			prefix += " "
-		}
+		padding := strings.Repeat(" ", prefixWidth)
 		for numEmptyLinesToAppend > 0 {
-			lines = append(lines, prefix)
+			lines = append(lines, padding)
 			numEmptyLinesToAppend--
 		}
 	}
